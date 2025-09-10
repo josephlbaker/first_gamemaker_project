@@ -17,6 +17,7 @@
     {"name":"Timelines","order":8,"path":"folders/Timelines.yy",},
   ],
   "ResourceOrderSettings":[
+    {"name":"obj_wall","order":1,"path":"objects/obj_wall/obj_wall.yy",},
     {"name":"spr_player_idle_down","order":5,"path":"sprites/spr_player_idle_down/spr_player_idle_down.yy",},
     {"name":"spr_player_idle_left","order":4,"path":"sprites/spr_player_idle_left/spr_player_idle_left.yy",},
     {"name":"spr_player_idle_right","order":7,"path":"sprites/spr_player_idle_right/spr_player_idle_right.yy",},
@@ -27,5 +28,6 @@
     {"name":"spr_player_run_up","order":10,"path":"sprites/spr_player_run_up/spr_player_run_up.yy",},
     {"name":"spr_wall","order":1,"path":"sprites/spr_wall/spr_wall.yy",},
     {"name":"spr_wall2","order":2,"path":"sprites/spr_wall2/spr_wall2.yy",},
+    {"name":"Sprite12","order":16,"path":"sprites/Sprite12/Sprite12.yy",},
   ],
 }
