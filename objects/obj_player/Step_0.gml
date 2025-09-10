@@ -3,6 +3,7 @@ left_key = keyboard_check(ord("A"));
 down_key = keyboard_check(ord("S"));
 up_key = keyboard_check(ord("W"));
 
+
 xspd = (right_key - left_key) * move_speed;
 yspd = (down_key - up_key) * move_speed;
 
@@ -33,6 +34,17 @@ if (facing == "down")
 	else if (facing == "right") sprite_index = spr_player_idle_right;
 	else if (facing == "up") sprite_index = spr_player_idle_up;
 }
+
+//collisions
+if place_meeting(x + xspd, y, obj_wall) == true
+	{
+		xspd = 0;
+	}
+if place_meeting(x, y + yspd, obj_wall) == true
+	{
+		yspd = 0;
+	}
+
 
 x += xspd;
 y += yspd;
