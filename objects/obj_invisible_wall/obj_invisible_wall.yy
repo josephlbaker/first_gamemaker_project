@@ -1,11 +1,11 @@
 {
   "$GMObject":"",
-  "%Name":"obj_wall_top",
+  "%Name":"obj_invisible_wall",
   "eventList":[
     {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":0,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
   ],
   "managed":true,
-  "name":"obj_wall_top",
+  "name":"obj_invisible_wall",
   "overriddenProperties":[],
   "parent":{
     "name":"Objects",
@@ -30,8 +30,8 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"spr_wall_top",
-    "path":"sprites/spr_wall_top/spr_wall_top.yy",
+    "name":"zInvisible_wall",
+    "path":"sprites/zInvisible_wall/zInvisible_wall.yy",
   },
   "spriteMaskId":null,
   "visible":true,
