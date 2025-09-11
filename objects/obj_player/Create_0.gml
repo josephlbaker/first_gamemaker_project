@@ -1,7 +1,7 @@
 xspd = 0;
 yspd = 0;
 
-move_speed = 1;
+move_speed = 2;
 
 sprite[RIGHT] = spr_player_idle_right;
 sprite[UP] = spr_player_idle_up;
