@@ -4,8 +4,8 @@ var down_key = keyboard_check(ord("S"));
 var up_key = keyboard_check(ord("W"));
 var shift_key = keyboard_check(vk_shift);
 
-var collide_x = false;
-var collide_y = false;
+//var collide_x = false;
+//var collide_y = false;
 
 
 //get player speed
@@ -14,16 +14,24 @@ xspd = (right_key - left_key) * current_speed;
 yspd = (down_key - up_key) * current_speed;
 
 
+//pause
+if instance_exists(obj_pauser)
+	{
+		xspd = 0;
+		yspd = 0;
+	}
+
+
 //set player facing down to start
 mask_index = sprite[DOWN];
 
 
 //detect if player hit wall
-if place_meeting(x + xspd, y, obj_invisible_wall) == true
+if place_meeting(x + xspd, y, obj_wall) == true
 	{
 		xspd = 0;
 	}
-if place_meeting(x, y + yspd, obj_invisible_wall) == true
+if place_meeting(x, y + yspd, obj_wall) == true
 	{
 		yspd = 0;
 	}
@@ -54,8 +62,8 @@ if (xspd != 0 || yspd != 0) {
 
 
 //stop player if they hit wall
-if (collide_x) xspd = 0;
-if (collide_y) yspd = 0;
+//if (collide_x) xspd = 0;
+//if (collide_y) yspd = 0;
 
 
 //move the player
@@ -68,3 +76,6 @@ if xspd == 0 && yspd == 0 {
 	image_index = 0;
 }
 
+
+//depth
+depth = -bbox_bottom;
