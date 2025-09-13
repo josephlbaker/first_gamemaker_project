@@ -9,3 +9,4 @@ sprite[LEFT] = spr_player_idle_left;
 sprite[DOWN] = spr_player_idle_down;
 
 face = DOWN;
+is_attacking = false;
