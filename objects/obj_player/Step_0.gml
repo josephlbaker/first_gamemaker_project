@@ -2,17 +2,39 @@ var right_key = keyboard_check(ord("D"));
 var left_key = keyboard_check(ord("A"));
 var down_key = keyboard_check(ord("S"));
 var up_key = keyboard_check(ord("W"));
-var shift_key = keyboard_check(vk_shift);
+var toggle_walk = keyboard_check_pressed(ord("T"));
+var dash_pressed = keyboard_check_pressed(vk_shift);
 var attack_pressed = mouse_check_button_pressed(mb_left);
 
-//var collide_x = false;
-//var collide_y = false;
+
+// Handle dash trigger
+if (dash_pressed && cooldown_timer <= 0 && !is_dashing && !is_attacking) {
+    is_dashing = true; // Set is_dashing to true
+    dash_timer = dash_duration; // Use dash_duration to set dash_timer
+    
+    // Set dash direction based on input or current facing
+    var dash_dir_x = right_key - left_key;
+    var dash_dir_y = down_key - up_key;
+    
+    // If no input, dash in the direction player is facing
+    if (dash_dir_x == 0 && dash_dir_y == 0) {
+        switch (face) {
+            case RIGHT: dash_dir_x = 1; break;
+            case LEFT: dash_dir_x = -1; break;
+            case DOWN: dash_dir_y = 1; break;
+            case UP: dash_dir_y = -1; break;
+        }
+    }
+    
+    xspd = dash_dir_x * dash_speed;
+    yspd = dash_dir_y * dash_speed;
+}
 
 
-//get player speed
-//var current_speed = shift_key ? move_speed / 2 : move_speed;
-//xspd = (right_key - left_key) * current_speed;
-//yspd = (down_key - up_key) * current_speed;
+// Toggle walk mode
+if (toggle_walk) {
+    is_walking = !is_walking;
+}
 
 
 //pause
@@ -36,11 +58,29 @@ if (attack_pressed && !is_attacking) {
 }
 
 
-//get player speed
-var speed_modifier = is_attacking ? 0.5 : 1; // Half speed during attack
-var current_speed = (shift_key ? move_speed / 2 : move_speed) * speed_modifier;
-xspd = (right_key - left_key) * current_speed;
-yspd = (down_key - up_key) * current_speed;
+// Update dash timer
+if (is_dashing) {
+    dash_timer--;
+    if (dash_timer <= 0) {
+        is_dashing = false;
+        cooldown_timer = cooldown_duration;
+    }
+}
+
+// Update cooldown timer
+if (cooldown_timer > 0) {
+    cooldown_timer--;
+}
+
+
+// Get player speed (only if not dashing)
+if (!is_dashing) {
+    var speed_modifier = is_attacking ? 0.5 : 1;
+    var base_speed = is_walking ? move_speed / 2 : move_speed;
+    var current_speed = base_speed * speed_modifier;
+    xspd = (right_key - left_key) * current_speed;
+    yspd = (down_key - up_key) * current_speed;
+}
 
 
 //set player facing down to start
@@ -62,16 +102,16 @@ if place_meeting(x, y + yspd, obj_wall) == true
 if (!is_attacking) {
     if (xspd != 0 || yspd != 0) {
         if (xspd > 0) {
-            sprite_index = shift_key ? spr_player_walk_right : spr_player_run_right;
+            sprite_index = is_dashing ? spr_player_dash_right : (is_walking ? spr_player_walk_right : spr_player_run_right);
             face = RIGHT;
         } else if (xspd < 0) {
-            sprite_index = shift_key ? spr_player_walk_left : spr_player_run_left;
+            sprite_index = is_dashing ? spr_player_dash_left : (is_walking ? spr_player_walk_left : spr_player_run_left);
             face = LEFT;
         } else if (yspd > 0) {
-            sprite_index = shift_key ? spr_player_walk_down : spr_player_run_down;
+            sprite_index = is_dashing ? spr_player_dash_down : (is_walking ? spr_player_walk_down : spr_player_run_down);
             face = DOWN;
         } else if (yspd < 0) {
-            sprite_index = shift_key ? spr_player_walk_up : spr_player_run_up;
+            sprite_index = is_dashing ? spr_player_dash_up : (is_walking ? spr_player_walk_up : spr_player_run_up);
             face = UP;
         }
     } else {
@@ -97,22 +137,17 @@ if (!is_attacking) {
         } else {
             // If moving after attack, switch to appropriate movement sprite
             if (xspd > 0) {
-                sprite_index = shift_key ? spr_player_walk_right : spr_player_run_right;
+                sprite_index = is_dashing ? spr_player_dash_right : (is_walking ? spr_player_walk_right : spr_player_run_right);
             } else if (xspd < 0) {
-                sprite_index = shift_key ? spr_player_walk_left : spr_player_run_left;
+                sprite_index = is_dashing ? spr_player_dash_left : (is_walking ? spr_player_walk_left : spr_player_run_left);
             } else if (yspd > 0) {
-                sprite_index = shift_key ? spr_player_walk_down : spr_player_run_down;
+                sprite_index = is_dashing ? spr_player_dash_down : (is_walking ? spr_player_walk_down : spr_player_run_down);
             } else if (yspd < 0) {
-                sprite_index = shift_key ? spr_player_walk_up : spr_player_run_up;
+                sprite_index = is_dashing ? spr_player_dash_up : (is_walking ? spr_player_walk_up : spr_player_run_up);
             }
         }
     }
 }
-
-
-//stop player if they hit wall
-//if (collide_x) xspd = 0;
-//if (collide_y) yspd = 0;
 
 
 //move the player
