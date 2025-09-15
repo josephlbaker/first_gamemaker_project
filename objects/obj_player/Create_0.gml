@@ -12,8 +12,8 @@ is_walking = false;
 is_dashing = false;
 dash_timer = 0;
 cooldown_timer = 0;
-dash_duration = .3 * game_get_speed(gamespeed_fps); // Duration of dash (.5)
-cooldown_duration = .3 * game_get_speed(gamespeed_fps); // Cooldown between dashes (3)
+dash_duration = .25 * game_get_speed(gamespeed_fps); // Duration of dash (.5)
+cooldown_duration = .1 * game_get_speed(gamespeed_fps); // Cooldown between dashes (3)
 
 // Dash direction storage for smooth movement
 dash_dir_x = 0;

@@ -91,8 +91,15 @@ if (!is_dashing && !instance_exists(obj_pauser)) {
     var speed_modifier = is_attacking ? 0.5 : 1;
     var base_speed = is_walking ? move_speed / 2 : move_speed;
     var current_speed = base_speed * speed_modifier;
+    
     xspd = (right_key - left_key) * current_speed;
     yspd = (down_key - up_key) * current_speed;
+    
+    // Simple diagonal correction - only when both inputs are pressed
+    if (abs(xspd) > 0 && abs(yspd) > 0) {
+        xspd *= 1/sqrt(2); // 1/sqrt(2) as a constant
+        yspd *= 1/sqrt(2);
+    }
 }
 
 
