@@ -1,21 +1,20 @@
 xspd = 0;
 yspd = 0;
 move_speed = 2;
-dash_speed = 25;
-
+dash_speed = 15;
 sprite[RIGHT] = spr_player_idle_right;
 sprite[UP] = spr_player_idle_up;
 sprite[LEFT] = spr_player_idle_left;
 sprite[DOWN] = spr_player_idle_down;
 face = DOWN;
-
-
 is_attacking = false;
 is_walking = false;
 is_dashing = false;
-
-
 dash_timer = 0;
 cooldown_timer = 0;
-dash_duration = .1 * game_get_speed(gamespeed_fps); // Adjust duration as needed (0.5 seconds)
-cooldown_duration = .5 * game_get_speed(gamespeed_fps); // 3 seconds cooldown
+dash_duration = .3 * game_get_speed(gamespeed_fps); // Duration of dash (.5)
+cooldown_duration = .3 * game_get_speed(gamespeed_fps); // Cooldown between dashes (3)
+
+// Dash direction storage for smooth movement
+dash_dir_x = 0;
+dash_dir_y = 0;

@@ -48,6 +48,7 @@
     {"id":{"name":"rm_outdoors","path":"rooms/rm_outdoors/rm_outdoors.yy",},},
     {"id":{"name":"scr_macros","path":"scripts/scr_macros/scr_macros.yy",},},
     {"id":{"name":"bg_forest","path":"sprites/bg_forest/bg_forest.yy",},},
+    {"id":{"name":"spr_anime_idle_down","path":"sprites/spr_anime_idle_down/spr_anime_idle_down.yy",},},
     {"id":{"name":"spr_chest","path":"sprites/spr_chest/spr_chest.yy",},},
     {"id":{"name":"spr_player_attack1_down","path":"sprites/spr_player_attack1_down/spr_player_attack1_down.yy",},},
     {"id":{"name":"spr_player_attack1_left","path":"sprites/spr_player_attack1_left/spr_player_attack1_left.yy",},},

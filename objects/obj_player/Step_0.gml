@@ -3,18 +3,18 @@ var left_key = keyboard_check(ord("A"));
 var down_key = keyboard_check(ord("S"));
 var up_key = keyboard_check(ord("W"));
 var toggle_walk = keyboard_check_pressed(ord("T"));
-var dash_pressed = keyboard_check_pressed(vk_shift);
+var dash_pressed = keyboard_check_pressed(vk_space);
 var attack_pressed = mouse_check_button_pressed(mb_left);
 
 
 // Handle dash trigger
 if (dash_pressed && cooldown_timer <= 0 && !is_dashing && !is_attacking) {
-    is_dashing = true; // Set is_dashing to true
-    dash_timer = dash_duration; // Use dash_duration to set dash_timer
+    is_dashing = true;
+    dash_timer = dash_duration;
     
-    // Set dash direction based on input or current facing
-    var dash_dir_x = right_key - left_key;
-    var dash_dir_y = down_key - up_key;
+    // Store dash direction based on input or current facing
+    dash_dir_x = right_key - left_key;
+    dash_dir_y = down_key - up_key;
     
     // If no input, dash in the direction player is facing
     if (dash_dir_x == 0 && dash_dir_y == 0) {
@@ -25,9 +25,6 @@ if (dash_pressed && cooldown_timer <= 0 && !is_dashing && !is_attacking) {
             case UP: dash_dir_y = -1; break;
         }
     }
-    
-    xspd = dash_dir_x * dash_speed;
-    yspd = dash_dir_y * dash_speed;
 }
 
 
@@ -46,7 +43,7 @@ if instance_exists(obj_pauser)
 
 
 // Handle attack trigger
-if (attack_pressed && !is_attacking) {
+if (attack_pressed && !is_attacking && !is_dashing) { // Prevent attacking while dashing
     is_attacking = true;
     switch (face) {
         case RIGHT: sprite_index = spr_player_attack1_right; break;
@@ -58,12 +55,28 @@ if (attack_pressed && !is_attacking) {
 }
 
 
-// Update dash timer
+// Update dash with smooth easing
 if (is_dashing) {
+    // Calculate progress (0 to 1)
+    var progress = 1 - (dash_timer / dash_duration);
+    
+    // Ease out formula (starts fast, slows down smoothly)
+    var ease_factor = 1 - power(1 - progress, 3);
+    
+    // Apply eased speed - starts at full speed, reduces to 20% by end
+    var current_dash_speed = dash_speed * (1 - ease_factor * 0.6);
+    
+    xspd = dash_dir_x * current_dash_speed;
+    yspd = dash_dir_y * current_dash_speed;
+    
     dash_timer--;
     if (dash_timer <= 0) {
         is_dashing = false;
         cooldown_timer = cooldown_duration;
+        
+        // Smooth transition - keep some momentum
+        xspd *= 0.3;
+        yspd *= 0.3;
     }
 }
 
@@ -73,8 +86,8 @@ if (cooldown_timer > 0) {
 }
 
 
-// Get player speed (only if not dashing)
-if (!is_dashing) {
+// Get player speed (only if not dashing or paused)
+if (!is_dashing && !instance_exists(obj_pauser)) {
     var speed_modifier = is_attacking ? 0.5 : 1;
     var base_speed = is_walking ? move_speed / 2 : move_speed;
     var current_speed = base_speed * speed_modifier;
@@ -156,9 +169,9 @@ y += yspd;
 
 
 //animate
-if xspd == 0 && yspd == 0 && !is_attacking {
-	image_index = 0;
-}
+//if xspd == 0 && yspd == 0 && !is_attacking {
+//	image_index = 0;
+//}
 
 
 //depth
