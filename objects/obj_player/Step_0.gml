@@ -7,6 +7,48 @@ var dash_pressed = keyboard_check_pressed(vk_space);
 var attack_pressed = mouse_check_button_pressed(mb_left);
 
 
+// Handle invincibility frames
+if (invincible > 0) {
+    invincible--;
+}
+
+
+//handle death
+if (player_health <= 0 && !is_dead) {
+    is_dead = true;
+	death_timer = 0; // Reset timer
+    
+    // Set death sprite based on facing direction
+    switch (face) {
+        case RIGHT: sprite_index = spr_player_death_down; break; // Use down death for all directions
+        case LEFT: sprite_index = spr_player_death_down; break;  // or create separate death sprites
+        case DOWN: sprite_index = spr_player_death_down; break;
+        case UP: sprite_index = spr_player_death_down; break;
+    }
+    
+    image_index = 0;
+    
+    // Stop all movement
+    xspd = 0;
+    yspd = 0;
+}
+
+// Prevent movement and actions when dead
+if (is_dead) {
+	death_timer++;
+    xspd = 0;
+    yspd = 0;
+    
+    // Restart room when death animation finishes OR ADD GAME OVER SCREEN
+    if (image_index >= image_number - 1 && death_timer >= 60) {
+        room_restart();
+    }
+    
+    // Exit early to prevent other player actions
+    exit;
+}
+
+
 // Handle dash trigger
 if (dash_pressed && cooldown_timer <= 0 && !is_dashing && !is_attacking) {
     is_dashing = true;
