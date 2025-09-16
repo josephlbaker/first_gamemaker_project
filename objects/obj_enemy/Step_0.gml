@@ -3,12 +3,41 @@ if (instance_exists(obj_pauser)) {
     exit;
 }
 
+// Handle enemy invincibility frames
+if (enemy_invincible > 0) {
+    enemy_invincible--;
+}
+
+// Handle enemy death
+if (enemy_health <= 0 && !is_enemy_dead) {
+    is_enemy_dead = true;
+    
+    // Set death sprite (or use existing idle sprite)
+    sprite_index = spr_player_death_down; // You can create spr_enemy_death if desired
+    
+    // Stop all movement and AI
+    xspd = 0;
+    yspd = 0;
+    state = ENEMY_STATE.WANDERING;
+    is_attacking = false;
+    
+    show_debug_message("Enemy died!");
+    
+    // Destroy enemy after brief delay
+    alarm[0] = 60; // Destroy after 0.5 seconds
+}
+
+// Don't do anything else if dead
+if (is_enemy_dead) {
+    exit;
+}
+
 // Find player
 var player = instance_find(obj_player, 0);
 var player_detected = false;
 var dist_to_player = 9999;
 
-// CRITICAL: Don't attack dead players!
+// Don't attack dead players!
 if (player != noone && !player.is_dead) {
     dist_to_player = point_distance(x, y, player.x, player.y);
     player_detected = (dist_to_player <= detection_range);

@@ -94,6 +94,42 @@ if (attack_pressed && !is_attacking && !is_dashing) { // Prevent attacking while
         case UP: sprite_index = spr_player_attack1_up; break;
     }
     image_index = 0; // Start the attack animation from the beginning
+    
+    // Check for enemies in attack range when attack starts
+    var attack_reach = 64; // Attack range
+    var enemies = ds_list_create();
+    
+    // Find all enemies within attack range
+    collision_circle_list(x, y, attack_reach, obj_enemy, false, true, enemies, false);
+    
+    // Damage all enemies in range
+    for (var i = 0; i < ds_list_size(enemies); i++) {
+        var enemy = ds_list_find_value(enemies, i);
+        
+        // Check if enemy is in the direction we're facing
+        var enemy_dir = point_direction(x, y, enemy.x, enemy.y);
+        var attack_dir = 0;
+        
+        switch (face) {
+            case RIGHT: attack_dir = 0; break;
+            case DOWN: attack_dir = 270; break;
+            case LEFT: attack_dir = 180; break;
+            case UP: attack_dir = 90; break;
+        }
+        
+        // Check if enemy is roughly in the attack direction (within 90 degrees)
+        var dir_diff = abs(angle_difference(enemy_dir, attack_dir));
+        
+        if (dir_diff <= 45 && enemy.enemy_invincible <= 0) { // 90 degree attack arc
+            // Deal damage to enemy
+            enemy.enemy_health -= 25; // Player attack damage
+            enemy.enemy_invincible = enemy.max_enemy_invincible;
+            
+            show_debug_message("Hit enemy! Enemy health: " + string(enemy.enemy_health));
+        }
+    }
+    
+    ds_list_destroy(enemies);
 }
 
 

@@ -26,6 +26,13 @@ attack_range = 64;
 chase_speed = 2;
 attack_damage = 10;
 
+// Enemy Health System
+enemy_health = 50;
+max_enemy_health = 50;
+enemy_invincible = 0;
+max_enemy_invincible = 20; // Brief invincibility after being hit
+is_enemy_dead = false;
+
 // Animation and timing
 is_attacking = false;
 attack_cooldown = 0;
