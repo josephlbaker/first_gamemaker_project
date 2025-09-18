@@ -4,7 +4,7 @@ move_speed = 2;
 dash_speed = 15;
 
 
-player_health = 30;
+player_health = 10;
 max_health = 100;
 invincible = 0;
 max_invincible = 30; // Half second of invincibility

@@ -16,12 +16,13 @@ if (invincible > 0) {
 //handle death
 if (player_health <= 0 && !is_dead) {
     is_dead = true;
-	death_timer = 0; // Reset timer
+    death_timer = 0; // Reset timer
+    show_debug_message("Player died! Health: " + string(player_health));
     
     // Set death sprite based on facing direction
     switch (face) {
-        case RIGHT: sprite_index = spr_player_death_down; break; // Use down death for all directions
-        case LEFT: sprite_index = spr_player_death_down; break;  // or create separate death sprites
+        case RIGHT: sprite_index = spr_player_death_down; break;
+        case LEFT: sprite_index = spr_player_death_down; break;
         case DOWN: sprite_index = spr_player_death_down; break;
         case UP: sprite_index = spr_player_death_down; break;
     }
@@ -33,15 +34,22 @@ if (player_health <= 0 && !is_dead) {
     yspd = 0;
 }
 
-// Prevent movement and actions when dead
+
+// Handle death state
 if (is_dead) {
-	death_timer++;
+    death_timer++;
     xspd = 0;
     yspd = 0;
     
-    // Restart room when death animation finishes OR ADD GAME OVER SCREEN
+    // Show death menu when death animation finishes
     if (image_index >= image_number - 1 && death_timer >= 60) {
-        room_restart();
+        // Create death menu if it doesn't exist (ONLY ONCE)
+        if (!instance_exists(obj_death_menu)) {
+            var menu = instance_create_layer(0, 0, "Instances", obj_death_menu);
+        }
+        // Stop the death animation from looping
+        image_speed = 0;
+        image_index = image_number - 1; // Keep on last frame
     }
     
     // Exit early to prevent other player actions
