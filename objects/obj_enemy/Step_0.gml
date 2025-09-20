@@ -1,161 +1,209 @@
-// Don't do anything if game is paused
-if (instance_exists(obj_pauser)) {
-    exit;
-}
-
-// Handle enemy invincibility frames
+// ===== UPDATE TIMERS =====
 if (enemy_invincible > 0) {
     enemy_invincible--;
 }
 
-// Handle enemy death
-if (enemy_health <= 0 && !is_enemy_dead) {
-    is_enemy_dead = true;
-    
-    // Set death sprite (or use existing idle sprite)
-    sprite_index = spr_player_death_down; // You can create spr_enemy_death if desired
-    
-    // Stop all movement and AI
-    xspd = 0;
-    yspd = 0;
-    state = ENEMY_STATE.WANDERING;
-    is_attacking = false;
-    
-    show_debug_message("Enemy died!");
-    
-    // Destroy enemy after brief delay
-    alarm[0] = 60; // Destroy after 0.5 seconds
-}
-
-// Don't do anything else if dead
-if (is_enemy_dead) {
-    exit;
-}
-
-// Find player
-var player = instance_find(obj_player, 0);
-var player_detected = false;
-var dist_to_player = 9999;
-
-// Don't attack dead players!
-if (player != noone && !player.is_dead) {
-    dist_to_player = point_distance(x, y, player.x, player.y);
-    player_detected = (dist_to_player <= detection_range);
-} else {
-    // Player is dead or doesn't exist - stop everything
-    state = ENEMY_STATE.WANDERING;
-    is_attacking = false;
-    player_detected = false;
-}
-
-// Update attack cooldown
 if (attack_cooldown > 0) {
     attack_cooldown--;
 }
 
-// State machine
-switch (state) {
-    case ENEMY_STATE.WANDERING:
-        // Wandering behavior
-        wander_timer++;
+// ===== STATE MACHINE =====
+switch(current_state) {
+    case EnemyState.IDLE:
+        // Check for pause
+        if (instance_exists(obj_pauser)) {
+            change_state(EnemyState.PAUSED);
+            break;
+        }
         
+        // Check for death
+        if (enemy_health <= 0) {
+            change_state(EnemyState.DEAD);
+            break;
+        }
+        
+        // Look for player
+        if (detect_player()) {
+            change_state(EnemyState.CHASING);
+        } else {
+            // Start wandering after a moment
+            if (++wander_timer > 60) {
+                change_state(EnemyState.WANDERING);
+            }
+        }
+        break;
+        
+    case EnemyState.WANDERING:
+        // Check for pause
+        if (instance_exists(obj_pauser)) {
+            change_state(EnemyState.PAUSED);
+            break;
+        }
+        
+        // Check for death
+        if (enemy_health <= 0) {
+            change_state(EnemyState.DEAD);
+            break;
+        }
+        
+        // Look for player
+        if (detect_player()) {
+            change_state(EnemyState.CHASING);
+            break;
+        }
+        
+        // Wander behavior
+        wander_timer++;
         if (wander_timer >= wander_change_time) {
             target_dir = random(360);
             wander_timer = 0;
             wander_change_time = 60 + random(120);
         }
         
-        // Calculate desired movement
         desired_x = lengthdir_x(move_speed, target_dir);
         desired_y = lengthdir_y(move_speed, target_dir);
-        
-        // Check if player detected (and alive)
-        if (player_detected && player != noone && !player.is_dead) {
-            state = ENEMY_STATE.CHASING;
-        }
         break;
         
-    case ENEMY_STATE.CHASING:
-        if (player != noone && player_detected && !player.is_dead) {
-            // Check if close enough to attack
-            if (dist_to_player <= attack_range && attack_cooldown <= 0) {
-                state = ENEMY_STATE.ATTACKING;
-                is_attacking = true;
-                attack_cooldown = attack_cooldown_max;
-            } else {
-                // Chase the player
-                var dir_to_player = point_direction(x, y, player.x, player.y);
-                desired_x = lengthdir_x(chase_speed, dir_to_player);
-                desired_y = lengthdir_y(chase_speed, dir_to_player);
+    case EnemyState.CHASING:
+        // Check for pause
+        if (instance_exists(obj_pauser)) {
+            change_state(EnemyState.PAUSED);
+            break;
+        }
+        
+        // Check for death
+        if (enemy_health <= 0) {
+            change_state(EnemyState.DEAD);
+            break;
+        }
+        
+        // Verify target is still valid
+        if (current_target == noone || current_target.current_state == PlayerState.DEAD) {
+            change_state(EnemyState.WANDERING);
+            break;
+        }
+        
+        var dist_to_target = point_distance(x, y, current_target.x, current_target.y);
+        
+        // Check if we lost the target
+        if (dist_to_target > detection_range * 1.5) {
+            search_timer++;
+            if (search_timer > max_search_time) {
+                change_state(EnemyState.WANDERING);
+                search_timer = 0;
             }
+            // Move to last known position
+            var dir_to_last = point_direction(x, y, last_known_x, last_known_y);
+            desired_x = lengthdir_x(chase_speed, dir_to_last);
+            desired_y = lengthdir_y(chase_speed, dir_to_last);
         } else {
-            // Lost player or player is dead, go back to wandering
-            state = ENEMY_STATE.WANDERING;
-            wander_timer = 0;
+            search_timer = 0;
+            last_known_x = current_target.x;
+            last_known_y = current_target.y;
+            
+            // Check if close enough to attack
+            if (dist_to_target <= attack_range && attack_cooldown <= 0) {
+                change_state(EnemyState.ATTACKING);
+            } else {
+                // Chase the target
+                var dir_to_target = point_direction(x, y, current_target.x, current_target.y);
+                desired_x = lengthdir_x(chase_speed, dir_to_target);
+                desired_y = lengthdir_y(chase_speed, dir_to_target);
+            }
         }
         break;
         
-    case ENEMY_STATE.ATTACKING:
-        // Stop moving during attack
+    case EnemyState.ATTACKING:
+        // Stop movement during attack
         desired_x = 0;
         desired_y = 0;
         xspd = 0;
         yspd = 0;
         
-        // CRITICAL: Stop attacking if player is dead
-        if (player == noone || player.is_dead) {
-            is_attacking = false;
-            state = ENEMY_STATE.WANDERING;
+        // Check if target died or left
+        if (current_target == noone || current_target.current_state == PlayerState.DEAD) {
+            change_state(EnemyState.WANDERING);
             break;
         }
         
         // Check if attack animation is done
         if (image_index >= image_number - 1) {
-            is_attacking = false;
-            
-            // Deal damage if player is still in range AND ALIVE
-            if (player != noone && !player.is_dead && point_distance(x, y, player.x, player.y) <= attack_range) {
-                // Check if player has invincibility frames
-                if (player.invincible <= 0) {
-                    player.player_health -= attack_damage;
-                    
-                    // Give player brief invincibility
-                    player.invincible = player.max_invincible;
-                    
-                    // Debug: show damage dealt
-                    show_debug_message("Player health: " + string(player.player_health));
-                }
-            }
-            
-            state = ENEMY_STATE.COOLDOWN;
+            perform_attack();
+            change_state(EnemyState.COOLDOWN);
         }
         break;
         
-    case ENEMY_STATE.COOLDOWN:
+    case EnemyState.COOLDOWN:
         // Brief pause after attacking
         desired_x = 0;
         desired_y = 0;
         
-        // CRITICAL: Stop cooldown if player is dead
-        if (player == noone || player.is_dead) {
-            state = ENEMY_STATE.WANDERING;
+        // Check if target died
+        if (current_target == noone || current_target.current_state == PlayerState.DEAD) {
+            change_state(EnemyState.WANDERING);
             break;
         }
         
-        if (attack_cooldown <= attack_cooldown_max - 30) { // 0.5 second cooldown
-            if (player_detected && dist_to_player > attack_range) {
-                state = ENEMY_STATE.CHASING;
-            } else if (!player_detected) {
-                state = ENEMY_STATE.WANDERING;
+        // Return to appropriate state after cooldown
+        if (attack_cooldown <= attack_cooldown_max - 30) {
+            var dist = point_distance(x, y, current_target.x, current_target.y);
+            
+            if (dist <= detection_range) {
+                change_state(EnemyState.CHASING);
             } else {
-                state = ENEMY_STATE.CHASING;
+                change_state(EnemyState.WANDERING);
             }
+        }
+        break;
+        
+    case EnemyState.HURT:
+        // Apply knockback
+        xspd = hurt_knockback_x;
+        yspd = hurt_knockback_y;
+        
+        // Reduce knockback over time
+        hurt_knockback_x *= 0.8;
+        hurt_knockback_y *= 0.8;
+        
+        // Return to previous state when knockback is done
+        if (abs(hurt_knockback_x) < 0.1 && abs(hurt_knockback_y) < 0.1) {
+            if (current_target != noone && current_target.current_state != PlayerState.DEAD) {
+                change_state(EnemyState.CHASING);
+            } else {
+                change_state(EnemyState.WANDERING);
+            }
+        }
+        break;
+        
+    case EnemyState.DEAD:
+        death_timer++;
+        xspd = 0;
+        yspd = 0;
+        
+        // Keep on last frame of death animation
+        if (image_index >= image_number - 1) {
+            image_speed = 0;
+            image_index = image_number - 1;
+        }
+        exit; // No further processing when dead
+        
+    case EnemyState.PAUSED:
+        xspd = 0;
+        yspd = 0;
+        
+        // Check if unpaused
+        if (!instance_exists(obj_pauser)) {
+            change_state(previous_state);
         }
         break;
 }
 
-// Apply steering behavior (smooth movement)
-if (!is_attacking) {
+// ===== APPLY STEERING (for smooth movement) =====
+if (current_state != EnemyState.ATTACKING && 
+    current_state != EnemyState.DEAD && 
+    current_state != EnemyState.HURT &&
+    current_state != EnemyState.PAUSED) {
+    
     var steer_x = desired_x - xspd;
     var steer_y = desired_y - yspd;
     
@@ -170,72 +218,37 @@ if (!is_attacking) {
     }
 }
 
-// Wall collision
+// ===== UPDATE FACING DIRECTION =====
+if (abs(xspd) > abs(yspd)) {
+    if (xspd > 0) face = RIGHT;
+    else if (xspd < 0) face = LEFT;
+} else if (abs(yspd) > 0.1) {
+    if (yspd > 0) face = DOWN;
+    else face = UP;
+}
+
+// ===== UPDATE SPRITE =====
+if (current_state != EnemyState.ATTACKING && current_state != EnemyState.DEAD) {
+    update_movement_sprite();
+}
+
+// ===== COLLISION DETECTION =====
 if (place_meeting(x + xspd, y, obj_wall)) {
     xspd = 0;
-    // Change direction when hitting wall during wandering
-    if (state == ENEMY_STATE.WANDERING) {
+    if (current_state == EnemyState.WANDERING) {
         target_dir = random(360);
     }
 }
 if (place_meeting(x, y + yspd, obj_wall)) {
     yspd = 0;
-    // Change direction when hitting wall during wandering  
-    if (state == ENEMY_STATE.WANDERING) {
+    if (current_state == EnemyState.WANDERING) {
         target_dir = random(360);
     }
 }
 
-// Update facing direction and sprites
-if (!is_attacking) {
-    if (abs(xspd) > abs(yspd)) {
-        if (xspd > 0) {
-            face = RIGHT;
-            sprite_index = spr_enemy_walk_right; // Replace with your enemy sprites
-        } else if (xspd < 0) {
-            face = LEFT;
-            sprite_index = spr_enemy_walk_left;
-        }
-    } else if (abs(yspd) > 0.1) {
-        if (yspd > 0) {
-            face = DOWN;
-            sprite_index = spr_enemy_walk_down;
-        } else {
-            face = UP;
-            sprite_index = spr_enemy_walk_up;
-        }
-    } else {
-        // Idle sprites
-        switch (face) {
-            case RIGHT: sprite_index = spr_enemy_idle_right; break;
-            case LEFT: sprite_index = spr_enemy_idle_left; break;
-            case DOWN: sprite_index = spr_enemy_idle_down; break;
-            case UP: sprite_index = spr_enemy_idle_up; break;
-        }
-    }
-} else {
-    // Attack sprites - but only if player is alive
-    if (player != noone && !player.is_dead) {
-        switch (face) {
-            case RIGHT: sprite_index = spr_player_attack1_right; break;
-            case LEFT: sprite_index = spr_player_attack1_left; break;
-            case DOWN: sprite_index = spr_player_attack1_down; break;
-            case UP: sprite_index = spr_player_attack1_up; break;
-        }
-    } else {
-        // Player is dead, switch to idle
-        switch (face) {
-            case RIGHT: sprite_index = spr_enemy_idle_right; break;
-            case LEFT: sprite_index = spr_enemy_idle_left; break;
-            case DOWN: sprite_index = spr_enemy_idle_down; break;
-            case UP: sprite_index = spr_enemy_idle_up; break;
-        }
-    }
-}
-
-// Move the enemy
+// ===== APPLY MOVEMENT =====
 x += xspd;
 y += yspd;
 
-// Depth sorting
+// ===== UPDATE DEPTH =====
 depth = -bbox_bottom;
