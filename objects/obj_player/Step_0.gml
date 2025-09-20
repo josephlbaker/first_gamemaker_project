@@ -215,9 +215,19 @@ switch(current_state) {
 // ===== COLLISION DETECTION =====
 if (place_meeting(x + xspd, y, obj_wall)) {
     xspd = 0;
+    // Stop dash if currently dashing
+    if (current_state == PlayerState.DASHING) {
+        cooldown_timer = cooldown_duration;
+        change_state(PlayerState.IDLE);
+    }
 }
 if (place_meeting(x, y + yspd, obj_wall)) {
     yspd = 0;
+    // Stop dash if currently dashing
+    if (current_state == PlayerState.DASHING) {
+        cooldown_timer = cooldown_duration;
+        change_state(PlayerState.IDLE);
+    }
 }
 
 // ===== APPLY MOVEMENT =====

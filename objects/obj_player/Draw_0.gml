@@ -1,5 +1,5 @@
-draw_text(10, 10, "Health: " + string(player_health));
-
+// Draw shadow at player's feet
+draw_sprite(spr_shadow, 0, x, bbox_bottom);
 
 // Flash white when taking damage (without custom shader)
 if (invincible > 0 && invincible % 6 < 3) {
