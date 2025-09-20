@@ -6,6 +6,7 @@ var up_key = keyboard_check(ord("W"));
 var toggle_walk = keyboard_check_pressed(ord("T"));
 var dash_pressed = keyboard_check_pressed(vk_space);
 var attack_pressed = mouse_check_button_pressed(mb_left);
+var pause_pressed = keyboard_check_pressed(vk_escape);
 
 // ===== UPDATE INVINCIBILITY =====
 if (invincible > 0) {
@@ -20,6 +21,15 @@ if (cooldown_timer > 0) {
 // ===== TOGGLE WALK MODE =====
 if (toggle_walk) {
     is_walking = !is_walking;
+}
+
+// ===== PAUSE TOGGLE =====
+if (pause_pressed) {
+    if (instance_exists(obj_pauser)) {
+        instance_destroy(obj_pauser);
+    } else {
+        instance_create_layer(0, 0, "Instances", obj_pauser);
+    }
 }
 
 // ===== STATE MACHINE =====
