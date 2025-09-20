@@ -182,9 +182,12 @@ switch(current_state) {
     case PlayerState.PAUSED:
         xspd = 0;
         yspd = 0;
+        image_speed = 0;
         
         // Check if unpause
         if (!instance_exists(obj_pauser)) {
+            image_speed = 1;
+            //image_index = 0;
             change_state(previous_state);
         }
         break;
