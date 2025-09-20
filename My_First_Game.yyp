@@ -40,6 +40,7 @@
     {"id":{"name":"obj_chest","path":"objects/obj_chest/obj_chest.yy",},},
     {"id":{"name":"obj_death_menu","path":"objects/obj_death_menu/obj_death_menu.yy",},},
     {"id":{"name":"obj_enemy","path":"objects/obj_enemy/obj_enemy.yy",},},
+    {"id":{"name":"obj_game","path":"objects/obj_game/obj_game.yy",},},
     {"id":{"name":"obj_menu","path":"objects/obj_menu/obj_menu.yy",},},
     {"id":{"name":"obj_parallax_bg","path":"objects/obj_parallax_bg/obj_parallax_bg.yy",},},
     {"id":{"name":"obj_pauser","path":"objects/obj_pauser/obj_pauser.yy",},},
@@ -52,6 +53,7 @@
     {"id":{"name":"obj_warp_transition","path":"objects/obj_warp_transition/obj_warp_transition.yy",},},
     {"id":{"name":"rm_dungeon","path":"rooms/rm_dungeon/rm_dungeon.yy",},},
     {"id":{"name":"rm_outdoors","path":"rooms/rm_outdoors/rm_outdoors.yy",},},
+    {"id":{"name":"rm_parent","path":"rooms/rm_parent/rm_parent.yy",},},
     {"id":{"name":"rm_title","path":"rooms/rm_title/rm_title.yy",},},
     {"id":{"name":"scr_macros","path":"scripts/scr_macros/scr_macros.yy",},},
     {"id":{"name":"bg_forest","path":"sprites/bg_forest/bg_forest.yy",},},
@@ -108,9 +110,10 @@
   "resourceType":"GMProject",
   "resourceVersion":"2.0",
   "RoomOrderNodes":[
+    {"roomId":{"name":"rm_parent","path":"rooms/rm_parent/rm_parent.yy",},},
     {"roomId":{"name":"rm_title","path":"rooms/rm_title/rm_title.yy",},},
-    {"roomId":{"name":"rm_outdoors","path":"rooms/rm_outdoors/rm_outdoors.yy",},},
     {"roomId":{"name":"rm_dungeon","path":"rooms/rm_dungeon/rm_dungeon.yy",},},
+    {"roomId":{"name":"rm_outdoors","path":"rooms/rm_outdoors/rm_outdoors.yy",},},
   ],
   "templateType":"game",
   "TextureGroups":[
