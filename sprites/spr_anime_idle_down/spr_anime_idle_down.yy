@@ -37,8 +37,8 @@
   "nineSlice":null,
   "origin":4,
   "parent":{
-    "name":"animations",
-    "path":"folders/Sprites/animations.yy",
+    "name":"spr_anime",
+    "path":"folders/Sprites/animations/spr_anime.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

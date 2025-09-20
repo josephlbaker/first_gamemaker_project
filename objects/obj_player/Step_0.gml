@@ -7,6 +7,25 @@ var toggle_walk = keyboard_check_pressed(ord("T"));
 var dash_pressed = keyboard_check_pressed(vk_space);
 var attack_pressed = mouse_check_button_pressed(mb_left);
 var pause_pressed = keyboard_check_pressed(vk_escape);
+var interact_pressed = keyboard_check_pressed(ord("E"));
+
+
+// ===== INTERACTION CHECK =====
+if (interact_pressed) {
+    // Check if text display is already showing
+    if (instance_exists(obj_text_display)) {
+        // Close existing text
+        instance_destroy(obj_text_display);
+    } else {
+        // Look for signpost within interaction radius
+        var signpost = instance_nearest(x, y, obj_signpost);
+        if (signpost != noone && distance_to_object(signpost) <= 32) {
+            // Create text display
+            var text_obj = instance_create_layer(0, 0, "Instances", obj_text_display);
+            text_obj.text_to_show = signpost.sign_text;
+        }
+    }
+}
 
 // ===== UPDATE INVINCIBILITY =====
 if (invincible > 0) {

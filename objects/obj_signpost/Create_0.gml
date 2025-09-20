@@ -1,0 +1,1 @@
+sign_text = "This is a signpost.\nChange this text for each signpost!";

@@ -1,0 +1,1 @@
+sign_text = "Welcome to the village!";
