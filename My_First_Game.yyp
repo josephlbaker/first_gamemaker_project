@@ -42,6 +42,7 @@
   "name":"My_First_Game",
   "resources":[
     {"id":{"name":"obj_chest","path":"objects/obj_chest/obj_chest.yy",},},
+    {"id":{"name":"obj_crate","path":"objects/obj_crate/obj_crate.yy",},},
     {"id":{"name":"obj_death_menu","path":"objects/obj_death_menu/obj_death_menu.yy",},},
     {"id":{"name":"obj_enemy","path":"objects/obj_enemy/obj_enemy.yy",},},
     {"id":{"name":"obj_menu","path":"objects/obj_menu/obj_menu.yy",},},
@@ -63,6 +64,7 @@
     {"id":{"name":"bg_forest","path":"sprites/bg_forest/bg_forest.yy",},},
     {"id":{"name":"spr_anime_idle_down","path":"sprites/spr_anime_idle_down/spr_anime_idle_down.yy",},},
     {"id":{"name":"spr_chest","path":"sprites/spr_chest/spr_chest.yy",},},
+    {"id":{"name":"spr_crate","path":"sprites/spr_crate/spr_crate.yy",},},
     {"id":{"name":"spr_enemy_attack_down","path":"sprites/spr_enemy_attack_down/spr_enemy_attack_down.yy",},},
     {"id":{"name":"spr_enemy_attack_left","path":"sprites/spr_enemy_attack_left/spr_enemy_attack_left.yy",},},
     {"id":{"name":"spr_enemy_attack_right","path":"sprites/spr_enemy_attack_right/spr_enemy_attack_right.yy",},},

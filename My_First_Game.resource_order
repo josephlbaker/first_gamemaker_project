@@ -24,6 +24,7 @@
   ],
   "ResourceOrderSettings":[
     {"name":"obj_chest","order":2,"path":"objects/obj_chest/obj_chest.yy",},
+    {"name":"obj_crate","order":12,"path":"objects/obj_crate/obj_crate.yy",},
     {"name":"obj_death_menu","order":8,"path":"objects/obj_death_menu/obj_death_menu.yy",},
     {"name":"obj_enemy","order":8,"path":"objects/obj_enemy/obj_enemy.yy",},
     {"name":"obj_menu","order":6,"path":"objects/obj_menu/obj_menu.yy",},
@@ -41,6 +42,7 @@
     {"name":"rm_title","order":3,"path":"rooms/rm_title/rm_title.yy",},
     {"name":"bg_forest","order":9,"path":"sprites/bg_forest/bg_forest.yy",},
     {"name":"spr_chest","order":5,"path":"sprites/spr_chest/spr_chest.yy",},
+    {"name":"spr_crate","order":11,"path":"sprites/spr_crate/spr_crate.yy",},
     {"name":"spr_enemy_attack_down","order":11,"path":"sprites/spr_enemy_attack_down/spr_enemy_attack_down.yy",},
     {"name":"spr_enemy_attack_left","order":9,"path":"sprites/spr_enemy_attack_left/spr_enemy_attack_left.yy",},
     {"name":"spr_enemy_attack_right","order":10,"path":"sprites/spr_enemy_attack_right/spr_enemy_attack_right.yy",},
