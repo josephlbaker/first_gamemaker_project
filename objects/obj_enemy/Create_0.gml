@@ -44,6 +44,8 @@ attack_range = 64;
 attack_damage = 10;
 attack_cooldown = 0;
 attack_cooldown_max = 120;
+hitbox_width = 32;
+hitbox_height = 16;
 
 // ===== HEALTH VARIABLES =====
 enemy_health = 50;
@@ -176,14 +178,54 @@ function detect_player() {
     return false;
 }
 
+
 function perform_attack() {
     if (current_target != noone && current_target.current_state != PlayerState.DEAD) {
-        var dist = point_distance(x, y, current_target.x, current_target.y);
+        // Calculate hitbox dimensions based on facing direction
+        var attack_left, attack_top, attack_right, attack_bottom;
         
-        if (dist <= attack_range && current_target.invincible <= 0) {
-            current_target.player_health -= attack_damage;
-            current_target.invincible = current_target.max_invincible;
-            show_debug_message("Player health: " + string(current_target.player_health));
+        switch (face) {
+            case RIGHT:
+                attack_left = x - hitbox_height/2;
+                attack_top = y - hitbox_width/2;
+                attack_right = x + hitbox_height + hitbox_height;
+                attack_bottom = y + hitbox_width/2;
+                break;
+            case LEFT:
+                attack_left = x - hitbox_height - hitbox_height;
+                attack_top = y - hitbox_width/2;
+                attack_right = x + hitbox_height/2;
+                attack_bottom = y + hitbox_width/2;
+                break;
+            case DOWN:
+                attack_left = x - hitbox_width/2;
+                attack_top = y - hitbox_height/2;
+                attack_right = x + hitbox_width/2;
+                attack_bottom = y + hitbox_height + hitbox_height;
+                break;
+            case UP:
+                attack_left = x - hitbox_width/2;
+                attack_top = y - hitbox_height - hitbox_height;
+                attack_right = x + hitbox_width/2;
+                attack_bottom = y + hitbox_height/2;
+                break;
+        }
+        
+        // Check if attack hitbox overlaps with player sprite bounds
+        var player_left = current_target.bbox_left;
+        var player_top = current_target.bbox_top;
+        var player_right = current_target.bbox_right;
+        var player_bottom = current_target.bbox_bottom;
+        
+        // Rectangle overlap check between attack hitbox and player sprite
+        if (attack_right >= player_left && attack_left <= player_right &&
+            attack_bottom >= player_top && attack_top <= player_bottom) {
+            
+            if (current_target.invincible <= 0) {
+                current_target.player_health -= attack_damage;
+                current_target.invincible = current_target.max_invincible;
+                show_debug_message("Player health: " + string(current_target.player_health));
+            }
         }
     }
 }

@@ -39,6 +39,8 @@ death_timer = 0;
 // ===== COMBAT VARIABLES =====
 attack_damage = 25;
 attack_reach = 64;
+hitbox_width = 42;
+hitbox_height = 16;
 
 // ===== SPRITE MANAGEMENT =====
 sprite[RIGHT] = spr_player_idle_right;
@@ -106,26 +108,51 @@ function change_state(new_state) {
 
 function perform_attack() {
     var enemies = ds_list_create();
-    collision_circle_list(x, y, attack_reach, obj_enemy, false, true, enemies, false);
+    
+    // Calculate hitbox dimensions based on facing direction
+    var attack_left, attack_top, attack_right, attack_bottom;
+    
+    switch (face) {
+        case RIGHT:
+            attack_left = x - hitbox_height/2;
+            attack_top = y - hitbox_width/2;
+            attack_right = x + hitbox_height + hitbox_height;
+            attack_bottom = y + hitbox_width/2;
+            break;
+        case LEFT:
+            attack_left = x - hitbox_height - hitbox_height;
+            attack_top = y - hitbox_width/2;
+            attack_right = x + hitbox_height/2;
+            attack_bottom = y + hitbox_width/2;
+            break;
+        case DOWN:
+            attack_left = x - hitbox_width/2;
+            attack_top = y - hitbox_height/2;
+            attack_right = x + hitbox_width/2;
+            attack_bottom = y + hitbox_height + hitbox_height;
+            break;
+        case UP:
+            attack_left = x - hitbox_width/2;
+            attack_top = y - hitbox_height - hitbox_height;
+            attack_right = x + hitbox_width/2;
+            attack_bottom = y + hitbox_height/2;
+            break;
+    }
+    
+    // Use rectangle collision with direction-specific dimensions
+    collision_rectangle_list(
+        attack_left, attack_top, attack_right, attack_bottom,
+        obj_enemy, false, true, enemies, false
+    );
     
     for (var i = 0; i < ds_list_size(enemies); i++) {
         var enemy = ds_list_find_value(enemies, i);
         
-        var enemy_dir = point_direction(x, y, enemy.x, enemy.y);
-        var attack_dir = 0;
-        
-        switch (face) {
-            case RIGHT: attack_dir = 0; break;
-            case DOWN: attack_dir = 270; break;
-            case LEFT: attack_dir = 180; break;
-            case UP: attack_dir = 90; break;
-        }
-        
-        var dir_diff = abs(angle_difference(enemy_dir, attack_dir));
-        
-        if (dir_diff <= 45 && enemy.enemy_invincible <= 0) {
+        if (enemy.enemy_invincible <= 0) {
             enemy.enemy_health -= attack_damage;
             enemy.enemy_invincible = enemy.max_enemy_invincible;
+            // Add knockback
+            enemy.change_state(EnemyState.HURT);
             show_debug_message("Hit enemy! Enemy health: " + string(enemy.enemy_health));
         }
     }
