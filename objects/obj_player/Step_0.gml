@@ -172,6 +172,25 @@ switch(current_state) {
             case UP: sprite_index = spr_player_dash_up; break;
         }
         
+        // Check for crate collisions during dash
+        var crates = ds_list_create();
+        collision_rectangle_list(
+            x - sprite_width/2, y - sprite_height/2, 
+            x + sprite_width/2, y + sprite_height/2,
+            obj_crate, false, true, crates, false
+        );
+        
+        for (var i = 0; i < ds_list_size(crates); i++) {
+            var crate = ds_list_find_value(crates, i);
+            // Only damage if crate is not already destroyed/animating
+            if (crate.crate_health > 0 && !crate.is_animating) {
+                crate.take_damage();
+                show_debug_message("Dash broke crate!");
+            }
+        }
+        
+        ds_list_destroy(crates);
+        
         dash_timer--;
         if (dash_timer <= 0) {
             cooldown_timer = cooldown_duration;
@@ -213,7 +232,7 @@ switch(current_state) {
 }
 
 // ===== COLLISION DETECTION =====
-if (place_meeting(x + xspd, y, obj_wall)) {
+if (check_solid_collision(x + xspd, y)) {
     xspd = 0;
     // Stop dash if currently dashing
     if (current_state == PlayerState.DASHING) {
@@ -221,7 +240,7 @@ if (place_meeting(x + xspd, y, obj_wall)) {
         change_state(PlayerState.IDLE);
     }
 }
-if (place_meeting(x, y + yspd, obj_wall)) {
+if (check_solid_collision(x, y + yspd)) {
     yspd = 0;
     // Stop dash if currently dashing
     if (current_state == PlayerState.DASHING) {

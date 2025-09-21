@@ -49,6 +49,10 @@ sprite[LEFT] = spr_player_idle_left;
 sprite[DOWN] = spr_player_idle_down;
 face = DOWN;
 
+// ===== COLLISION MASK =====
+// Set collision mask to always use the idle down sprite's collision
+mask_index = spr_player_idle_down;
+
 // ===== HELPER FUNCTIONS =====
 // ===== HELPER FUNCTIONS IN CREATE EVENT =====
 function change_state(new_state) {
@@ -108,6 +112,8 @@ function change_state(new_state) {
 
 function perform_attack() {
     var enemies = ds_list_create();
+    var crates = ds_list_create();
+    var walls = ds_list_create();
     
     // Calculate hitbox dimensions based on facing direction
     var attack_left, attack_top, attack_right, attack_bottom;
@@ -139,12 +145,25 @@ function perform_attack() {
             break;
     }
     
-    // Use rectangle collision with direction-specific dimensions
+    // Check for enemies
     collision_rectangle_list(
         attack_left, attack_top, attack_right, attack_bottom,
         obj_enemy, false, true, enemies, false
     );
     
+    // Check for crates
+    collision_rectangle_list(
+        attack_left, attack_top, attack_right, attack_bottom,
+        obj_crate, false, true, crates, false
+    );
+    
+    // Check for destructible walls
+    collision_rectangle_list(
+        attack_left, attack_top, attack_right, attack_bottom,
+        obj_destructable_wall, false, true, walls, false
+    );
+    
+    // Damage enemies
     for (var i = 0; i < ds_list_size(enemies); i++) {
         var enemy = ds_list_find_value(enemies, i);
         
@@ -157,5 +176,49 @@ function perform_attack() {
         }
     }
     
+    // Damage crates
+    for (var i = 0; i < ds_list_size(crates); i++) {
+        var crate = ds_list_find_value(crates, i);
+        crate.take_damage();
+        show_debug_message("Hit crate! Crate health: " + string(crate.crate_health));
+    }
+    
+    // Damage destructible walls
+    for (var i = 0; i < ds_list_size(walls); i++) {
+        var wall = ds_list_find_value(walls, i);
+        wall.take_damage();
+        show_debug_message("Hit destructible wall!");
+    }
+    
     ds_list_destroy(enemies);
+    ds_list_destroy(crates);
+    ds_list_destroy(walls);
+}
+
+// ===== CUSTOM COLLISION FUNCTION =====
+function check_solid_collision(check_x, check_y) {
+    // Check regular walls
+    if (place_meeting(check_x, check_y, obj_wall)) {
+        // Get list of all wall objects at this position
+        var walls = ds_list_create();
+        collision_point_list(check_x, check_y, obj_wall, false, true, walls, false);
+        
+        for (var i = 0; i < ds_list_size(walls); i++) {
+            var wall = ds_list_find_value(walls, i);
+            
+            // Skip crates during dash
+            if (current_state == PlayerState.DASHING && wall.object_index == obj_crate) {
+                continue;
+            }
+            
+            // If it's a basic wall OR a solid destructible object
+            if (wall.object_index == obj_wall || 
+                (variable_instance_exists(wall, "is_solid") && wall.is_solid)) {
+                ds_list_destroy(walls);
+                return true;
+            }
+        }
+        ds_list_destroy(walls);
+    }
+    return false;
 }

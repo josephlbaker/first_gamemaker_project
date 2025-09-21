@@ -1,12 +1,12 @@
 {
   "$GMObject":"",
-  "%Name":"obj_crate",
+  "%Name":"obj_destructable_wall",
   "eventList":[
     {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":0,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
     {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":3,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
   ],
   "managed":true,
-  "name":"obj_crate",
+  "name":"obj_destructable_wall",
   "overriddenProperties":[],
   "parent":{
     "name":"Objects",
@@ -34,8 +34,8 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"spr_crate",
-    "path":"sprites/spr_crate/spr_crate.yy",
+    "name":"spr_destructable_wall",
+    "path":"sprites/spr_destructable_wall/spr_destructable_wall.yy",
   },
   "spriteMaskId":null,
   "visible":true,
