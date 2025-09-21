@@ -1,13 +1,13 @@
 {
   "$GMTileSet":"v1",
-  "%Name":"ts_props",
+  "%Name":"ts_stairs_and_doors",
   "autoTileSets":[],
   "macroPageTiles":{
     "SerialiseHeight":0,
     "SerialiseWidth":0,
     "TileSerialiseData":[],
   },
-  "name":"ts_props",
+  "name":"ts_stairs_and_doors",
   "out_columns":64,
   "out_tilehborder":2,
   "out_tilevborder":2,
@@ -18,8 +18,8 @@
   "resourceType":"GMTileSet",
   "resourceVersion":"2.0",
   "spriteId":{
-    "name":"zTileSets_props",
-    "path":"sprites/zTileSets_props/zTileSets_props.yy",
+    "name":"zTileSets_stairs_and_doors",
+    "path":"sprites/zTileSets_stairs_and_doors/zTileSets_stairs_and_doors.yy",
   },
   "spriteNoExport":false,
   "textureGroupId":{

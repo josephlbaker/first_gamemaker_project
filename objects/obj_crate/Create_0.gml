@@ -10,6 +10,9 @@ sprite_index = spr_crate;
 image_index = 0; // Start on first frame (intact)
 image_speed = 0; // Don't animate initially
 
+// ===== DEPTH SORTING =====
+depth = -bbox_bottom;
+
 // ===== DAMAGE FUNCTION =====
 function take_damage() {
     if (crate_health > 0 && !is_animating) {

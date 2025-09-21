@@ -9,6 +9,9 @@ sprite_index = spr_destructable_wall;
 image_index = 0; // Start on first frame (intact)
 image_speed = 0; // Don't animate initially
 
+// ===== DEPTH SORTING =====
+depth = -bbox_bottom;
+
 // ===== DAMAGE FUNCTION =====
 function take_damage() {
     if (wall_health > 0) {
@@ -22,3 +25,4 @@ function take_damage() {
         }
     }
 }
+ 

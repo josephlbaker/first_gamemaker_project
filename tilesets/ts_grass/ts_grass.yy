@@ -8,7 +8,7 @@
     "TileSerialiseData":[],
   },
   "name":"ts_grass",
-  "out_columns":16,
+  "out_columns":32,
   "out_tilehborder":2,
   "out_tilevborder":2,
   "parent":{
@@ -28,11 +28,11 @@
   },
   "tileAnimationFrames":[],
   "tileAnimationSpeed":15.0,
-  "tileHeight":16,
+  "tileHeight":8,
   "tilehsep":0,
   "tilevsep":0,
-  "tileWidth":16,
+  "tileWidth":8,
   "tilexoff":0,
   "tileyoff":0,
-  "tile_count":256,
+  "tile_count":1024,
 }

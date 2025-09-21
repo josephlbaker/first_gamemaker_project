@@ -205,12 +205,6 @@ function check_solid_collision(check_x, check_y) {
         
         for (var i = 0; i < ds_list_size(walls); i++) {
             var wall = ds_list_find_value(walls, i);
-            
-            // Skip crates during dash
-            if (current_state == PlayerState.DASHING && wall.object_index == obj_crate) {
-                continue;
-            }
-            
             // If it's a basic wall OR a solid destructible object
             if (wall.object_index == obj_wall || 
                 (variable_instance_exists(wall, "is_solid") && wall.is_solid)) {
