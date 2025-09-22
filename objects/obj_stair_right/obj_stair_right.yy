@@ -1,13 +1,13 @@
 {
   "$GMObject":"",
-  "%Name":"obj_stair_bounds",
+  "%Name":"obj_stair_right",
   "eventList":[],
   "managed":true,
-  "name":"obj_stair_bounds",
+  "name":"obj_stair_right",
   "overriddenProperties":[],
   "parent":{
-    "name":"Objects",
-    "path":"folders/Objects.yy",
+    "name":"stairs",
+    "path":"folders/Objects/obj_architecture/stairs.yy",
   },
   "parentObjectId":null,
   "persistent":false,
@@ -28,8 +28,8 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"spr_stair_bound",
-    "path":"sprites/spr_stair_bound/spr_stair_bound.yy",
+    "name":"spr_stair_right",
+    "path":"sprites/spr_stair_right/spr_stair_right.yy",
   },
   "spriteMaskId":null,
   "visible":true,

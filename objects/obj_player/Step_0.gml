@@ -93,6 +93,24 @@ switch(current_state) {
             yspd *= 1/sqrt(2);
         }
         
+        // ===== STAIR MOVEMENT LOGIC =====
+        // Check if player is colliding with stair objects and add vertical movement based on horizontal movement
+        if (place_meeting(x, y, obj_stair_right)) {
+            // On right stairs: moving right = go up, moving left = go down
+            if (xspd > 0) {
+                yspd -= abs(xspd) * 0.25; // Move up when going right
+            } else if (xspd < 0) {
+                yspd += abs(xspd) * 0.25; // Move down when going left
+            }
+        } else if (place_meeting(x, y, obj_stair_left)) {
+            // On left stairs: moving left = go up, moving right = go down
+            if (xspd < 0) {
+                yspd -= abs(xspd) * 0.25; // Move up when going left
+            } else if (xspd > 0) {
+                yspd += abs(xspd) * 0.25; // Move down when going right
+            }
+        }
+        
         // Update state based on movement
         if (xspd != 0 || yspd != 0) {
             if (current_state != PlayerState.MOVING) {
@@ -249,24 +267,6 @@ if (check_solid_collision(x, y + yspd)) {
     }
 }
 
-// ===== STAIR BOUNDS LOGIC =====
-if (place_meeting(x + xspd, y + yspd, obj_stair_bounds)) {
-    // Simple stair access: LEFT goes down-left, RIGHT goes up-right
-    if (left_key && !right_key) {
-        // Moving left on stairs - diagonal down-left
-        var stair_speed = sqrt(xspd * xspd + yspd * yspd);
-        if (stair_speed == 0) stair_speed = is_walking ? move_speed / 2 : move_speed;
-        xspd = -stair_speed * 0.7; // More horizontal movement
-        yspd = stair_speed * 0.7;  // Less vertical movement
-    } else if (right_key && !left_key) {
-        // Moving right on stairs - diagonal up-right
-        var stair_speed = sqrt(xspd * xspd + yspd * yspd);
-        if (stair_speed == 0) stair_speed = is_walking ? move_speed / 2 : move_speed;
-        xspd = stair_speed * 0.7;   // More horizontal movement
-        yspd = -stair_speed * 0.7;  // Less vertical movement
-    }
-    // If not pressing LEFT or RIGHT specifically, allow free movement
-}
 
 // ===== APPLY MOVEMENT =====
 x += xspd;
