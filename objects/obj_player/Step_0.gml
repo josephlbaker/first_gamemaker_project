@@ -249,6 +249,25 @@ if (check_solid_collision(x, y + yspd)) {
     }
 }
 
+// ===== STAIR BOUNDS LOGIC =====
+if (place_meeting(x + xspd, y + yspd, obj_stair_bounds)) {
+    // Simple stair access: LEFT goes down-left, RIGHT goes up-right
+    if (left_key && !right_key) {
+        // Moving left on stairs - diagonal down-left
+        var stair_speed = sqrt(xspd * xspd + yspd * yspd);
+        if (stair_speed == 0) stair_speed = is_walking ? move_speed / 2 : move_speed;
+        xspd = -stair_speed * 0.7; // More horizontal movement
+        yspd = stair_speed * 0.7;  // Less vertical movement
+    } else if (right_key && !left_key) {
+        // Moving right on stairs - diagonal up-right
+        var stair_speed = sqrt(xspd * xspd + yspd * yspd);
+        if (stair_speed == 0) stair_speed = is_walking ? move_speed / 2 : move_speed;
+        xspd = stair_speed * 0.7;   // More horizontal movement
+        yspd = -stair_speed * 0.7;  // Less vertical movement
+    }
+    // If not pressing LEFT or RIGHT specifically, allow free movement
+}
+
 // ===== APPLY MOVEMENT =====
 x += xspd;
 y += yspd;
