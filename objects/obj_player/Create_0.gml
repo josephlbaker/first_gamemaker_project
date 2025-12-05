@@ -136,19 +136,19 @@ face = DOWN;
 base_sprite = spr_new_player;
 
 // ===== CLOTHING/EQUIPMENT LAYERS =====
-// Each equipment slot can be set to a sprite or noone
+// Each equipment slot can be set to a sprite or undefined
 // To add equipment: equipment.chest = spr_your_sprite;
-// To remove equipment: equipment.chest = noone;
+// To remove equipment: equipment.chest = undefined;
 equipment = {
-    accessories: noone,        // Accessories like belts, bags, etc
-    chest: noone,    // Chest armor/clothing
-    feet: noone,               // Boots/shoes
-    hands: noone,              // Gloves/gauntlets
-    head: noone,               // Helmets/hats
-    legs: noone,               // Pants/leg armor
-    tools: noone,              // Tools held (pickaxe, shovel, etc)
-    weapons: noone,            // Weapons held
-    player_mount: noone        // Mount/vehicle
+    accessories: undefined,    // Accessories like belts, bags, etc
+    chest: spr_royal_shirt,          // Chest armor/clothing
+    feet: undefined,           // Boots/shoes
+    hands: undefined,          // Gloves/gauntlets
+    head: undefined,           // Helmets/hats
+    legs: undefined,           // Pants/leg armor
+    tools: undefined,          // Tools held (pickaxe, shovel, etc)
+    weapons: undefined,        // Weapons held
+    player_mount: undefined    // Mount/vehicle
 };
 
 // ===== ANIMATION FRAME MAPPING =====

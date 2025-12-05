@@ -1,6 +1,3 @@
-// Draw shadow at player's feet
-draw_sprite(spr_shadow, 0, x, bbox_bottom);
-
 // Get current frame from animation system
 var current_frame = get_current_frame();
 
@@ -20,47 +17,47 @@ draw_sprite_ext(base_sprite, current_frame, x, y, x_scale, 1, 0, c_white, 1);
 
 // Draw equipment layers (in order from bottom to top)
 // Feet layer (boots/shoes)
-if (equipment.feet != noone) {
+if (equipment.feet != undefined) {
     draw_sprite_ext(equipment.feet, current_frame, x, y, x_scale, 1, 0, c_white, 1);
 }
 
 // Legs layer (pants/leg armor)
-if (equipment.legs != noone) {
+if (equipment.legs != undefined) {
     draw_sprite_ext(equipment.legs, current_frame, x, y, x_scale, 1, 0, c_white, 1);
 }
 
 // Chest layer (shirts/chest armor)
-if (equipment.chest != noone) {
+if (equipment.chest != undefined) {
     draw_sprite_ext(equipment.chest, current_frame, x, y, x_scale, 1, 0, c_white, 1);
 }
 
 // Hands layer (gloves/gauntlets)
-if (equipment.hands != noone) {
+if (equipment.hands != undefined) {
     draw_sprite_ext(equipment.hands, current_frame, x, y, x_scale, 1, 0, c_white, 1);
 }
 
 // Head layer (helmets/hats)
-if (equipment.head != noone) {
+if (equipment.head != undefined) {
     draw_sprite_ext(equipment.head, current_frame, x, y, x_scale, 1, 0, c_white, 1);
 }
 
 // Accessories layer (capes, belts, bags)
-if (equipment.accessories != noone) {
+if (equipment.accessories != undefined) {
     draw_sprite_ext(equipment.accessories, current_frame, x, y, x_scale, 1, 0, c_white, 1);
 }
 
 // Tools layer (held items like pickaxe, shovel)
-if (equipment.tools != noone) {
+if (equipment.tools != undefined) {
     draw_sprite_ext(equipment.tools, current_frame, x, y, x_scale, 1, 0, c_white, 1);
 }
 
 // Weapons layer (swords, bows, etc)
-if (equipment.weapons != noone) {
+if (equipment.weapons != undefined) {
     draw_sprite_ext(equipment.weapons, current_frame, x, y, x_scale, 1, 0, c_white, 1);
 }
 
 // Player mount layer (riding animals/vehicles)
-if (equipment.player_mount != noone) {
+if (equipment.player_mount != undefined) {
     draw_sprite_ext(equipment.player_mount, current_frame, x, y, x_scale, 1, 0, c_white, 1);
 }
 
