@@ -1,14 +1,71 @@
 // Draw shadow at player's feet
 draw_sprite(spr_shadow, 0, x, bbox_bottom);
 
-// Flash white when taking damage (without custom shader)
-if (invincible > 0 && invincible % 6 < 3) {
-    // Draw white flash by blending
+// Get current frame from animation system
+var current_frame = get_current_frame();
+
+// Check if current animation should be flipped horizontally
+var flip_horizontal = current_anim.flip_h;
+var x_scale = flip_horizontal ? -1 : 1;
+
+// Flash white when taking damage
+var should_flash = (invincible > 0 && invincible % 6 < 3);
+
+if (should_flash) {
     gpu_set_fog(true, c_white, 0, 1);
-    draw_self();
+}
+
+// Draw base player sprite
+draw_sprite_ext(base_sprite, current_frame, x, y, x_scale, 1, 0, c_white, 1);
+
+// Draw equipment layers (in order from bottom to top)
+// Feet layer (boots/shoes)
+if (equipment.feet != noone) {
+    draw_sprite_ext(equipment.feet, current_frame, x, y, x_scale, 1, 0, c_white, 1);
+}
+
+// Legs layer (pants/leg armor)
+if (equipment.legs != noone) {
+    draw_sprite_ext(equipment.legs, current_frame, x, y, x_scale, 1, 0, c_white, 1);
+}
+
+// Chest layer (shirts/chest armor)
+if (equipment.chest != noone) {
+    draw_sprite_ext(equipment.chest, current_frame, x, y, x_scale, 1, 0, c_white, 1);
+}
+
+// Hands layer (gloves/gauntlets)
+if (equipment.hands != noone) {
+    draw_sprite_ext(equipment.hands, current_frame, x, y, x_scale, 1, 0, c_white, 1);
+}
+
+// Head layer (helmets/hats)
+if (equipment.head != noone) {
+    draw_sprite_ext(equipment.head, current_frame, x, y, x_scale, 1, 0, c_white, 1);
+}
+
+// Accessories layer (capes, belts, bags)
+if (equipment.accessories != noone) {
+    draw_sprite_ext(equipment.accessories, current_frame, x, y, x_scale, 1, 0, c_white, 1);
+}
+
+// Tools layer (held items like pickaxe, shovel)
+if (equipment.tools != noone) {
+    draw_sprite_ext(equipment.tools, current_frame, x, y, x_scale, 1, 0, c_white, 1);
+}
+
+// Weapons layer (swords, bows, etc)
+if (equipment.weapons != noone) {
+    draw_sprite_ext(equipment.weapons, current_frame, x, y, x_scale, 1, 0, c_white, 1);
+}
+
+// Player mount layer (riding animals/vehicles)
+if (equipment.player_mount != noone) {
+    draw_sprite_ext(equipment.player_mount, current_frame, x, y, x_scale, 1, 0, c_white, 1);
+}
+
+if (should_flash) {
     gpu_set_fog(false, c_white, 0, 1);
-} else {
-    draw_self();
 }
 
 // DEBUG: Draw attack hitbox when attacking (remove in final game)

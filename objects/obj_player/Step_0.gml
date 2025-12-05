@@ -37,6 +37,14 @@ if (cooldown_timer > 0) {
     cooldown_timer--;
 }
 
+// ===== UPDATE ATTACK COMBO TIMER =====
+if (attack_combo_timer > 0) {
+    attack_combo_timer--;
+} else {
+    // Reset combo if timer runs out
+    attack_combo_stage = 1;
+}
+
 // ===== TOGGLE WALK MODE =====
 if (toggle_walk) {
     is_walking = !is_walking;
@@ -69,6 +77,12 @@ switch(current_state) {
         
         // Check for attack
         if (attack_pressed && cooldown_timer <= 0) {
+            // Advance combo stage if within combo window, otherwise start fresh
+            if (attack_combo_timer > 0 && attack_combo_stage < 3) {
+                attack_combo_stage++;
+            } else {
+                attack_combo_stage = 1;
+            }
             change_state(PlayerState.ATTACKING);
             break;
         }
@@ -127,20 +141,21 @@ switch(current_state) {
             }
         }
         
-        // Update sprite based on state and direction
+        // Update animation based on state and direction
         if (current_state == PlayerState.MOVING) {
+            // Use run animations for movement (walking mode not differentiated in new sprite sheet)
             switch(face) {
-                case RIGHT: sprite_index = is_walking ? spr_player_walk_right : spr_player_run_right; break;
-                case LEFT: sprite_index = is_walking ? spr_player_walk_left : spr_player_run_left; break;
-                case DOWN: sprite_index = is_walking ? spr_player_walk_down : spr_player_run_down; break;
-                case UP: sprite_index = is_walking ? spr_player_walk_up : spr_player_run_up; break;
+                case RIGHT: set_animation(anim.run_right); break;
+                case LEFT: set_animation(anim.run_left); break;
+                case DOWN: set_animation(anim.run_down); break;
+                case UP: set_animation(anim.run_up); break;
             }
         } else {
             switch(face) {
-                case RIGHT: sprite_index = spr_player_idle_right; break;
-                case LEFT: sprite_index = spr_player_idle_left; break;
-                case DOWN: sprite_index = spr_player_idle_down; break;
-                case UP: sprite_index = spr_player_idle_up; break;
+                case RIGHT: set_animation(anim.idle_right); break;
+                case LEFT: set_animation(anim.idle_left); break;
+                case DOWN: set_animation(anim.idle_down); break;
+                case UP: set_animation(anim.idle_up); break;
             }
         }
         break;
@@ -151,7 +166,13 @@ switch(current_state) {
         yspd *= 0.5;
         
         // Check if attack animation finished
-        if (image_index >= image_number - 1) {
+        if (anim_frame >= current_anim.frame_count - 1) {
+            // If combo reached stage 3, reset it
+            if (attack_combo_stage >= 3) {
+                attack_combo_stage = 1;
+                attack_combo_timer = 0;
+            }
+            
             // Return to previous state
             if (xspd != 0 || yspd != 0) {
                 change_state(PlayerState.MOVING);
@@ -162,33 +183,20 @@ switch(current_state) {
         break;
         
     case PlayerState.DASHING:
-        // Calculate dash progress
-        var progress = 1 - (dash_timer / dash_duration);
-        var ease_factor = 1 - power(1 - progress, 3);
-        var current_dash_speed = dash_speed * (1 - ease_factor * 0.6);
+        // Faster animation during roll
+        anim_speed = 0.5;
         
-        xspd = dash_dir_x * current_dash_speed;
-        yspd = dash_dir_y * current_dash_speed;
-		
-		// Normalize diagonal dashing
-	    var normalized_x = dash_dir_x;
-	    var normalized_y = dash_dir_y;
-    
-	    if (abs(dash_dir_x) > 0 && abs(dash_dir_y) > 0) {
-	        normalized_x *= 1/sqrt(2); // 1/sqrt(2)
-	        normalized_y *= 1/sqrt(2);
-	    }
-    
-	    xspd = normalized_x * current_dash_speed;
-	    yspd = normalized_y * current_dash_speed;
-        
-        // Update dash sprite
-        switch(face) {
-            case RIGHT: sprite_index = spr_player_dash_right; break;
-            case LEFT: sprite_index = spr_player_dash_left; break;
-            case DOWN: sprite_index = spr_player_dash_down; break;
-            case UP: sprite_index = spr_player_dash_up; break;
+        // Normalize diagonal dashing
+        var normalized_x = dash_dir_x;
+        var normalized_y = dash_dir_y;
+        if (abs(dash_dir_x) > 0 && abs(dash_dir_y) > 0) {
+            normalized_x *= 1/sqrt(2);
+            normalized_y *= 1/sqrt(2);
         }
+        
+        // Consistent dash speed throughout animation
+        xspd = normalized_x * dash_speed;
+        yspd = normalized_y * dash_speed;
         
         // Check for crate collisions during dash
         var crates = ds_list_create();
@@ -209,12 +217,10 @@ switch(current_state) {
         
         ds_list_destroy(crates);
         
-        dash_timer--;
-        if (dash_timer <= 0) {
+        // End dash when animation is complete
+        if (anim_frame >= current_anim.frame_count - 1) {
             cooldown_timer = cooldown_duration;
-            // Keep some momentum
-            xspd *= 0.3;
-            yspd *= 0.3;
+            anim_speed = 0.15;  // Restore normal animation speed
             change_state(PlayerState.MOVING);
         }
         break;
@@ -225,12 +231,12 @@ switch(current_state) {
         yspd = 0;
         
         // Show death menu when animation finishes
-        if (image_index >= image_number - 1 && death_timer >= 60) {
+        if (anim_frame >= current_anim.frame_count - 1 && death_timer >= 60) {
             if (!instance_exists(obj_death_menu)) {
                 instance_create_layer(0, 0, "Instances", obj_death_menu);
             }
-            image_speed = 0;
-            image_index = image_number - 1;
+            anim_speed = 0;
+            anim_frame = current_anim.frame_count - 1;
         }
         // Exit early - no movement or other actions
         exit;
@@ -238,15 +244,37 @@ switch(current_state) {
     case PlayerState.PAUSED:
         xspd = 0;
         yspd = 0;
-        image_speed = 0;
         
         // Check if unpause
         if (!instance_exists(obj_pauser)) {
-            image_speed = 1;
-            //image_index = 0;
             change_state(previous_state);
         }
+        // Don't advance animation while paused
         break;
+}
+
+// ===== ANIMATE =====
+// Advance animation frame (except when paused or dead and finished)
+if (current_state != PlayerState.PAUSED) {
+    if (current_state == PlayerState.DEAD && anim_frame >= current_anim.frame_count - 1) {
+        // Keep on last frame
+        anim_frame = current_anim.frame_count - 1;
+    } else {
+        anim_timer += anim_speed;
+        if (anim_timer >= 1) {
+            anim_frame += floor(anim_timer);
+            anim_timer = anim_timer % 1;
+            
+            // Loop animation if past the end (except for death)
+            if (anim_frame >= current_anim.frame_count) {
+                if (current_state == PlayerState.DEAD) {
+                    anim_frame = current_anim.frame_count - 1;
+                } else {
+                    anim_frame = anim_frame % current_anim.frame_count;
+                }
+            }
+        }
+    }
 }
 
 // ===== COLLISION DETECTION =====
