@@ -209,6 +209,9 @@ switch(current_state) {
         
         // Check if attack animation finished
         if (anim_frame >= current_anim.frame_count - 1) {
+            // Reset animation speed
+            anim_speed = 0.10;
+            
             // If combo reached stage 3, reset it
             if (attack_combo_stage >= 3) {
                 attack_combo_stage = 1;

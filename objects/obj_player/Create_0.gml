@@ -261,7 +261,7 @@ is_attacking = false;  // Track if currently in attack animation
 // Current animation state
 current_anim = anim.idle_down;
 anim_frame = 0;          // Current frame within the animation (0-based)
-anim_speed = 0.15;       // Animation speed (frames per step)
+anim_speed = 0.10;       // Animation speed (frames per step) - Lower = Slower animations
 anim_timer = 0;          // Timer for animation
 
 // ===== COLLISION MASK =====
@@ -369,6 +369,9 @@ function change_state(new_state) {
             break;
             
         case PlayerState.ATTACKING:
+            // Make attacks snappy!
+            anim_speed = 0.3;
+            
             // Set attack animation based on combo stage and facing direction
             var attack_anim = anim.slash_1_down;
             
