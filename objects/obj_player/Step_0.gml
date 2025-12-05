@@ -16,13 +16,29 @@ if (interact_pressed) {
     if (instance_exists(obj_text_display)) {
         // Close existing text
         instance_destroy(obj_text_display);
-    } else {
+    } 
+    // Horse mounting/dismounting
+    else if (is_mounted) {
+        // Dismount horse - create static horse at player position
+        instance_create_layer(x, y, "Instances", obj_horse_static);
+        is_mounted = false;
+    }
+    else {
+        // Check for horse to mount
+        var horse = instance_nearest(x, y, obj_horse_static);
+        if (horse != noone && distance_to_object(horse) <= 32) {
+            // Mount the horse
+            instance_destroy(horse);
+            is_mounted = true;
+        }
         // Look for signpost within interaction radius
-        var signpost = instance_nearest(x, y, obj_signpost);
-        if (signpost != noone && distance_to_object(signpost) <= 32) {
-            // Create text display
-            var text_obj = instance_create_layer(0, 0, "Instances", obj_text_display);
-            text_obj.text_to_show = signpost.sign_text;
+        else {
+            var signpost = instance_nearest(x, y, obj_signpost);
+            if (signpost != noone && distance_to_object(signpost) <= 32) {
+                // Create text display
+                var text_obj = instance_create_layer(0, 0, "Instances", obj_text_display);
+                text_obj.text_to_show = signpost.sign_text;
+            }
         }
     }
 }
@@ -95,7 +111,12 @@ switch(current_state) {
         
         // Handle normal movement
         var speed_modifier = 1;
-        var base_speed = is_walking ? move_speed / 2 : move_speed;
+        var base_speed;
+        if (is_mounted) {
+            base_speed = horse_speed;  // Use horse speed when mounted
+        } else {
+            base_speed = is_walking ? move_speed / 2 : move_speed;
+        }
         var current_speed = base_speed * speed_modifier;
         
         xspd = (right_key - left_key) * current_speed;
@@ -141,21 +162,42 @@ switch(current_state) {
             }
         }
         
-        // Update animation based on state and direction
+        // Update animation based on state, direction, and mount status
         if (current_state == PlayerState.MOVING) {
-            // Use run animations for movement (walking mode not differentiated in new sprite sheet)
-            switch(face) {
-                case RIGHT: set_animation(anim.run_right); break;
-                case LEFT: set_animation(anim.run_left); break;
-                case DOWN: set_animation(anim.run_down); break;
-                case UP: set_animation(anim.run_up); break;
+            if (is_mounted) {
+                // Use horse run animations when mounted
+                switch(face) {
+                    case RIGHT: set_animation(anim.horse_run_right); break;
+                    case LEFT: set_animation(anim.horse_run_left); break;
+                    case DOWN: set_animation(anim.horse_run_down); break;
+                    case UP: set_animation(anim.horse_run_up); break;
+                }
+            } else {
+                // Use normal run animations
+                switch(face) {
+                    case RIGHT: set_animation(anim.run_right); break;
+                    case LEFT: set_animation(anim.run_left); break;
+                    case DOWN: set_animation(anim.run_down); break;
+                    case UP: set_animation(anim.run_up); break;
+                }
             }
         } else {
-            switch(face) {
-                case RIGHT: set_animation(anim.idle_right); break;
-                case LEFT: set_animation(anim.idle_left); break;
-                case DOWN: set_animation(anim.idle_down); break;
-                case UP: set_animation(anim.idle_up); break;
+            if (is_mounted) {
+                // Use horse idle animations when mounted
+                switch(face) {
+                    case RIGHT: set_animation(anim.horse_idle_right); break;
+                    case LEFT: set_animation(anim.horse_idle_left); break;
+                    case DOWN: set_animation(anim.horse_idle_down); break;
+                    case UP: set_animation(anim.horse_idle_up); break;
+                }
+            } else {
+                // Use normal idle animations
+                switch(face) {
+                    case RIGHT: set_animation(anim.idle_right); break;
+                    case LEFT: set_animation(anim.idle_left); break;
+                    case DOWN: set_animation(anim.idle_down); break;
+                    case UP: set_animation(anim.idle_up); break;
+                }
             }
         }
         break;
@@ -260,7 +302,13 @@ if (current_state != PlayerState.PAUSED) {
         // Keep on last frame
         anim_frame = current_anim.frame_count - 1;
     } else {
-        anim_timer += anim_speed;
+        // Normalize animation speed based on frame count
+        // This keeps cycle time consistent regardless of frame count
+        // Base: 6 frames at 0.15 speed = ~40 game frames per cycle
+        var base_frames = 6;
+        var normalized_speed = (current_anim.frame_count / base_frames) * anim_speed;
+        
+        anim_timer += normalized_speed;
         if (anim_timer >= 1) {
             anim_frame += floor(anim_timer);
             anim_timer = anim_timer % 1;
@@ -302,3 +350,11 @@ y += yspd;
 
 // ===== UPDATE DEPTH =====
 depth = -bbox_bottom;
+
+// ===== UPDATE HORSE ANIMATION =====
+if (is_mounted) {
+    update_horse_animation();
+}
+
+// ===== UPDATE SWORD ANIMATION =====
+update_sword_animation();

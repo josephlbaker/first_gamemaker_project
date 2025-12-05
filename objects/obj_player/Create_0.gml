@@ -98,6 +98,7 @@ previous_state = PlayerState.IDLE;
 xspd = 0;
 yspd = 0;
 move_speed = 2;
+horse_speed = 4;  // Speed when mounted on horse
 is_walking = false;
 
 // ===== DASH VARIABLES =====
@@ -140,12 +141,12 @@ base_sprite = spr_new_player;
 // To add equipment: equipment.chest = spr_your_sprite;
 // To remove equipment: equipment.chest = undefined;
 equipment = {
-    accessories: undefined,    // Accessories like belts, bags, etc
-    chest: spr_royal_shirt,          // Chest armor/clothing
-    feet: undefined,           // Boots/shoes
-    hands: undefined,          // Gloves/gauntlets
-    head: undefined,           // Helmets/hats
-    legs: undefined,           // Pants/leg armor
+    accessories: spr_farmer_hat,    // Accessories like belts, bags, etc
+    chest: spr_farmer_shirt_red,          // Chest armor/clothing
+    feet: spr_brown_boots,           // Boots/shoes
+    hands: spr_hands_bare,          // Gloves/gauntlets
+    head: spr_hair_1_brown,           // Helmets/hats
+    legs: spr_farmer_pants,           // Pants/leg armor
     tools: undefined,          // Tools held (pickaxe, shovel, etc)
     weapons: undefined,        // Weapons held
     player_mount: undefined    // Mount/vehicle
@@ -209,6 +210,54 @@ anim = {
     horse_run_up:     { start_frame: 495, frame_count: 6, flip_h: false }
 };
 
+// ===== SEPARATE HORSE SPRITE ANIMATION MAPPING (spr_horse_riding) =====
+// This is for the actual horse sprite drawn behind the player when mounted
+horse_anim = {
+    // Horse Idle
+    horse_idle_down:  { start_frame: 0,  frame_count: 2, flip_h: false },
+    horse_idle_right: { start_frame: 6,  frame_count: 2, flip_h: false },
+    horse_idle_left:  { start_frame: 6,  frame_count: 2, flip_h: true },
+    horse_idle_up:    { start_frame: 12, frame_count: 2, flip_h: false },
+    
+    // Horse Run
+    horse_run_down:   { start_frame: 18, frame_count: 6, flip_h: false },
+    horse_run_right:  { start_frame: 24, frame_count: 6, flip_h: false },
+    horse_run_left:   { start_frame: 24, frame_count: 6, flip_h: true },
+    horse_run_up:     { start_frame: 30, frame_count: 6, flip_h: false }
+};
+
+// Horse mounting state
+is_mounted = false;
+horse_sprite = spr_horse_riding;  // The separate horse sprite sheet
+current_horse_anim = horse_anim.horse_idle_down;
+
+// ===== SEPARATE SWORD SPRITE ANIMATION MAPPING (spr_sword) =====
+// This is for the sword sprite drawn during attacks
+sword_anim = {
+    // Slash 1 (First Swing)
+    slash_1_down:   { start_frame: 0,  frame_count: 3, flip_h: false },
+    slash_1_right:  { start_frame: 9,  frame_count: 3, flip_h: false },
+    slash_1_left:   { start_frame: 9,  frame_count: 3, flip_h: true },
+    slash_1_up:     { start_frame: 18, frame_count: 3, flip_h: false },
+    
+    // Slash 2 (Second Swing)
+    slash_2_down:   { start_frame: 3,  frame_count: 3, flip_h: false },
+    slash_2_right:  { start_frame: 12, frame_count: 3, flip_h: false },
+    slash_2_left:   { start_frame: 12, frame_count: 3, flip_h: true },
+    slash_2_up:     { start_frame: 21, frame_count: 3, flip_h: false },
+    
+    // Slash 3 (Combo Finisher)
+    slash_3_down:   { start_frame: 6,  frame_count: 3, flip_h: false },
+    slash_3_right:  { start_frame: 15, frame_count: 3, flip_h: false },
+    slash_3_left:   { start_frame: 15, frame_count: 3, flip_h: true },
+    slash_3_up:     { start_frame: 24, frame_count: 3, flip_h: false }
+};
+
+// Sword state
+sword_sprite = spr_sword;  // The separate sword sprite sheet
+current_sword_anim = sword_anim.slash_1_down;
+is_attacking = false;  // Track if currently in attack animation
+
 // Current animation state
 current_anim = anim.idle_down;
 anim_frame = 0;          // Current frame within the animation (0-based)
@@ -232,6 +281,74 @@ function set_animation(animation_data) {
 // Function to get the current sprite frame index
 function get_current_frame() {
     return current_anim.start_frame + floor(anim_frame);
+}
+
+// Function to get the current horse sprite frame index
+function get_current_horse_frame() {
+    return current_horse_anim.start_frame + floor(anim_frame);
+}
+
+// Function to set the horse animation based on player state and direction
+function update_horse_animation() {
+    if (!is_mounted) return;
+    
+    var is_moving = (current_state == PlayerState.MOVING);
+    
+    if (is_moving) {
+        switch (face) {
+            case DOWN:  current_horse_anim = horse_anim.horse_run_down; break;
+            case RIGHT: current_horse_anim = horse_anim.horse_run_right; break;
+            case LEFT:  current_horse_anim = horse_anim.horse_run_left; break;
+            case UP:    current_horse_anim = horse_anim.horse_run_up; break;
+        }
+    } else {
+        switch (face) {
+            case DOWN:  current_horse_anim = horse_anim.horse_idle_down; break;
+            case RIGHT: current_horse_anim = horse_anim.horse_idle_right; break;
+            case LEFT:  current_horse_anim = horse_anim.horse_idle_left; break;
+            case UP:    current_horse_anim = horse_anim.horse_idle_up; break;
+        }
+    }
+}
+
+// Function to get the current sword sprite frame index
+function get_current_sword_frame() {
+    // Clamp to sword animation's frame count so it doesn't loop
+    var sword_frame = min(floor(anim_frame), current_sword_anim.frame_count - 1);
+    return current_sword_anim.start_frame + sword_frame;
+}
+
+// Function to set the sword animation based on combo stage and direction
+function update_sword_animation() {
+    if (current_state != PlayerState.ATTACKING) {
+        is_attacking = false;
+        return;
+    }
+    
+    is_attacking = true;
+    
+    if (attack_combo_stage == 1) {
+        switch (face) {
+            case DOWN:  current_sword_anim = sword_anim.slash_1_down; break;
+            case RIGHT: current_sword_anim = sword_anim.slash_1_right; break;
+            case LEFT:  current_sword_anim = sword_anim.slash_1_left; break;
+            case UP:    current_sword_anim = sword_anim.slash_1_up; break;
+        }
+    } else if (attack_combo_stage == 2) {
+        switch (face) {
+            case DOWN:  current_sword_anim = sword_anim.slash_2_down; break;
+            case RIGHT: current_sword_anim = sword_anim.slash_2_right; break;
+            case LEFT:  current_sword_anim = sword_anim.slash_2_left; break;
+            case UP:    current_sword_anim = sword_anim.slash_2_up; break;
+        }
+    } else if (attack_combo_stage == 3) {
+        switch (face) {
+            case DOWN:  current_sword_anim = sword_anim.slash_3_down; break;
+            case RIGHT: current_sword_anim = sword_anim.slash_3_right; break;
+            case LEFT:  current_sword_anim = sword_anim.slash_3_left; break;
+            case UP:    current_sword_anim = sword_anim.slash_3_up; break;
+        }
+    }
 }
 
 // ===== HELPER FUNCTIONS IN CREATE EVENT =====

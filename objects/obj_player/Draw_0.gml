@@ -12,6 +12,14 @@ if (should_flash) {
     gpu_set_fog(true, c_white, 0, 1);
 }
 
+// Draw horse BEHIND player when mounted
+if (is_mounted) {
+    var horse_frame = get_current_horse_frame();
+    var horse_flip = current_horse_anim.flip_h;
+    var horse_x_scale = horse_flip ? -1 : 1;
+    draw_sprite_ext(horse_sprite, horse_frame, x, y, horse_x_scale, 1, 0, c_white, 1);
+}
+
 // Draw base player sprite
 draw_sprite_ext(base_sprite, current_frame, x, y, x_scale, 1, 0, c_white, 1);
 
@@ -54,6 +62,14 @@ if (equipment.tools != undefined) {
 // Weapons layer (swords, bows, etc)
 if (equipment.weapons != undefined) {
     draw_sprite_ext(equipment.weapons, current_frame, x, y, x_scale, 1, 0, c_white, 1);
+}
+
+// Draw sword during attack
+if (is_attacking) {
+    var sword_frame = get_current_sword_frame();
+    var sword_flip = current_sword_anim.flip_h;
+    var sword_x_scale = sword_flip ? -1 : 1;
+    draw_sprite_ext(sword_sprite, sword_frame, x, y, sword_x_scale, 1, 0, c_white, 1);
 }
 
 // Player mount layer (riding animals/vehicles)

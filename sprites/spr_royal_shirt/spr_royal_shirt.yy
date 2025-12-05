@@ -525,8 +525,8 @@
   "nineSlice":null,
   "origin":4,
   "parent":{
-    "name":"shirts",
-    "path":"folders/Sprites/NewPlayer/clothing/shirts.yy",
+    "name":"royal_shirt",
+    "path":"folders/Sprites/NewPlayer/clothing/shirts/royal_shirt.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",
