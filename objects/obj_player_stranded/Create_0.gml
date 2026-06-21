@@ -311,6 +311,18 @@ function perform_attack() {
     }
     ds_list_destroy(enemies);
 
+    // Damage tribe warriors (own health pool + i-frames handled in take_hit).
+    var warriors = ds_list_create();
+    collision_rectangle_list(atk_l, atk_t, atk_r, atk_b, obj_tribe_warrior, false, true, warriors, false);
+    for (var i = 0; i < ds_list_size(warriors); i++) {
+        var warrior = ds_list_find_value(warriors, i);
+        if (warrior.warrior_invincible <= 0 && warrior.current_state != TribeState.DEAD) {
+            warrior.take_hit(attack_damage);
+            hit_something = true;
+        }
+    }
+    ds_list_destroy(warriors);
+
     // Damage destructible props if present in the room.
     if (object_exists(obj_crate)) {
         var crates = ds_list_create();
