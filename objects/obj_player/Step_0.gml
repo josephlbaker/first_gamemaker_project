@@ -10,6 +10,45 @@ var pause_pressed = keyboard_check_pressed(vk_escape);
 var interact_pressed = keyboard_check_pressed(ord("E"));
 
 
+// ===== CHECK FOR ACTIVE NPC DIALOG =====
+var _npc_dialog_active = false;
+var _talking_npc = noone;
+with (obj_quest_npc) {
+    if (dialog_active) {
+        _npc_dialog_active = true;
+        _talking_npc = id;
+    }
+}
+
+// ===== BLOCK MOVEMENT DURING NPC DIALOG =====
+if (_npc_dialog_active && current_state != PlayerState.DEAD) {
+    xspd = 0;
+    yspd = 0;
+
+    if (interact_pressed && _talking_npc != noone) {
+        if (_talking_npc.is_hostile && _talking_npc.warning_given) {
+            _talking_npc.finish_provoked_dialog();
+        } else {
+            _talking_npc.advance_dialog();
+        }
+    }
+
+    if (current_state != PlayerState.IDLE) {
+        change_state(PlayerState.IDLE);
+    }
+    switch(face) {
+        case RIGHT: set_animation(anim.idle_right); break;
+        case LEFT: set_animation(anim.idle_left); break;
+        case DOWN: set_animation(anim.idle_down); break;
+        case UP: set_animation(anim.idle_up); break;
+    }
+
+    depth = -bbox_bottom;
+    if (is_mounted) { update_horse_animation(); }
+    update_sword_animation();
+    exit;
+}
+
 // ===== INTERACTION CHECK =====
 if (interact_pressed) {
     // Check if text display is already showing
@@ -24,20 +63,27 @@ if (interact_pressed) {
         is_mounted = false;
     }
     else {
-        // Check for horse to mount
-        var horse = instance_nearest(x, y, obj_horse_static);
-        if (horse != noone && distance_to_object(horse) <= 32) {
-            // Mount the horse
-            instance_destroy(horse);
-            is_mounted = true;
+        // Check for NPC to talk to
+        var npc = instance_nearest(x, y, obj_quest_npc);
+        if (npc != noone && distance_to_object(npc) <= 32 && !npc.is_hostile && npc.current_state != NpcState.DEAD) {
+            npc.start_dialog();
         }
-        // Look for signpost within interaction radius
         else {
-            var signpost = instance_nearest(x, y, obj_signpost);
-            if (signpost != noone && distance_to_object(signpost) <= 32) {
-                // Create text display
-                var text_obj = instance_create_layer(0, 0, "Instances", obj_text_display);
-                text_obj.text_to_show = signpost.sign_text;
+            // Check for horse to mount
+            var horse = instance_nearest(x, y, obj_horse_static);
+            if (horse != noone && distance_to_object(horse) <= 32) {
+                // Mount the horse
+                instance_destroy(horse);
+                is_mounted = true;
+            }
+            // Look for signpost within interaction radius
+            else {
+                var signpost = instance_nearest(x, y, obj_signpost);
+                if (signpost != noone && distance_to_object(signpost) <= 32) {
+                    // Create text display
+                    var text_obj = instance_create_layer(0, 0, "Instances", obj_text_display);
+                    text_obj.text_to_show = signpost.sign_text;
+                }
             }
         }
     }
@@ -353,6 +399,21 @@ y += yspd;
 
 // ===== UPDATE DEPTH =====
 depth = -bbox_bottom;
+
+// ===== LAW ENFORCEMENT SPAWNING =====
+if (wanted_level > 0 && current_state != PlayerState.DEAD) {
+    var spawn_interval = max(180, 600 - wanted_level * 120);
+    var max_enforcers = min(wanted_level + 1, 5);
+
+    law_spawn_timer++;
+    if (law_spawn_timer >= spawn_interval) {
+        var law_count = instance_number(obj_law_enforcement);
+        if (law_count < max_enforcers) {
+            spawn_law_enforcer();
+        }
+        law_spawn_timer = 0;
+    }
+}
 
 // ===== UPDATE HORSE ANIMATION =====
 if (is_mounted) {

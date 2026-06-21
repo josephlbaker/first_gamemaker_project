@@ -18,7 +18,7 @@ for (var i = 0; i < op_length; i++) {
                 case 0: // Continue
                     // Add your continue game logic here
                     //room_goto(rm_game_continue);
-					room_goto(rm_dungeon);
+					room_goto(rm_stranded);
                     break;
                 case 1: // New Game
                     // Add your new game logic here

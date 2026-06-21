@@ -130,6 +130,12 @@ attack_combo_stage = 1;        // Current combo stage (1, 2, or 3)
 attack_combo_timer = 0;        // Timer for combo window
 attack_combo_window = 30;      // Frames to input next attack in combo (0.5 seconds at 60fps)
 
+// ===== CRIME / WANTED SYSTEM =====
+// wanted_level 0 = peaceful, higher = more law enforcement pressure
+// Other systems can increase wanted_level to trigger law enforcement
+wanted_level = 0;
+law_spawn_timer = 0;
+
 // ===== SPRITE MANAGEMENT =====
 face = DOWN;
 
@@ -361,11 +367,15 @@ function change_state(new_state) {
     switch(new_state) {
         case PlayerState.DEAD:
             death_timer = 0;
-            // Set death animation
             set_animation(anim.death);
             xspd = 0;
             yspd = 0;
             show_debug_message("Player died! Health: " + string(player_health));
+            
+            // Clear wanted status and despawn all law enforcement on death
+            wanted_level = 0;
+            law_spawn_timer = 0;
+            with (obj_law_enforcement) { instance_destroy(); }
             break;
             
         case PlayerState.ATTACKING:
@@ -442,6 +452,7 @@ function perform_attack() {
     var enemies = ds_list_create();
     var crates = ds_list_create();
     var walls = ds_list_create();
+    var npcs = ds_list_create();
     
     // Calculate hitbox dimensions based on facing direction
     var attack_left, attack_top, attack_right, attack_bottom;
@@ -491,6 +502,19 @@ function perform_attack() {
         obj_destructable_wall, false, true, walls, false
     );
     
+    // Check for quest NPCs
+    collision_rectangle_list(
+        attack_left, attack_top, attack_right, attack_bottom,
+        obj_quest_npc, false, true, npcs, false
+    );
+    
+    // Check for law enforcement
+    var law_list = ds_list_create();
+    collision_rectangle_list(
+        attack_left, attack_top, attack_right, attack_bottom,
+        obj_law_enforcement, false, true, law_list, false
+    );
+    
     // Damage enemies
     for (var i = 0; i < ds_list_size(enemies); i++) {
         var enemy = ds_list_find_value(enemies, i);
@@ -501,6 +525,22 @@ function perform_attack() {
             // Add knockback
             enemy.change_state(EnemyState.HURT);
             show_debug_message("Hit enemy! Enemy health: " + string(enemy.enemy_health));
+        }
+    }
+    
+    // Damage quest NPCs (provokes them)
+    for (var i = 0; i < ds_list_size(npcs); i++) {
+        var npc = ds_list_find_value(npcs, i);
+        
+        if (npc.current_state != NpcState.DEAD && npc.npc_invincible <= 0) {
+            npc.npc_health -= attack_damage;
+            npc.npc_invincible = npc.max_npc_invincible;
+            
+            if (!npc.is_hostile) {
+                npc.become_hostile();
+            } else {
+                npc.npc_change_state(NpcState.HURT);
+            }
         }
     }
     
@@ -518,9 +558,60 @@ function perform_attack() {
         show_debug_message("Hit destructible wall!");
     }
     
+    // Damage law enforcement
+    for (var i = 0; i < ds_list_size(law_list); i++) {
+        var law = ds_list_find_value(law_list, i);
+        
+        if (law.current_state != LawState.DEAD && law.law_invincible <= 0) {
+            law.law_health -= attack_damage;
+            law.law_invincible = law.max_law_invincible;
+            law.law_change_state(LawState.HURT);
+        }
+    }
+    
     ds_list_destroy(enemies);
     ds_list_destroy(crates);
     ds_list_destroy(walls);
+    ds_list_destroy(npcs);
+    ds_list_destroy(law_list);
+}
+
+// ===== SPAWN LAW ENFORCEMENT OUTSIDE VIEWPORT =====
+function spawn_law_enforcer() {
+    var cam = view_camera[0];
+    var cam_x = camera_get_view_x(cam);
+    var cam_y = camera_get_view_y(cam);
+    var cam_w = camera_get_view_width(cam);
+    var cam_h = camera_get_view_height(cam);
+    var margin = 64;
+
+    var edge = irandom(3);
+    var spawn_x, spawn_y;
+
+    switch(edge) {
+        case 0: // top
+            spawn_x = cam_x + random(cam_w);
+            spawn_y = cam_y - margin;
+            break;
+        case 1: // right
+            spawn_x = cam_x + cam_w + margin;
+            spawn_y = cam_y + random(cam_h);
+            break;
+        case 2: // bottom
+            spawn_x = cam_x + random(cam_w);
+            spawn_y = cam_y + cam_h + margin;
+            break;
+        case 3: // left
+            spawn_x = cam_x - margin;
+            spawn_y = cam_y + random(cam_h);
+            break;
+    }
+
+    // Clamp to room bounds
+    spawn_x = clamp(spawn_x, 16, room_width - 16);
+    spawn_y = clamp(spawn_y, 16, room_height - 16);
+
+    instance_create_layer(spawn_x, spawn_y, "Instances", obj_law_enforcement);
 }
 
 // ===== CUSTOM COLLISION FUNCTION =====
