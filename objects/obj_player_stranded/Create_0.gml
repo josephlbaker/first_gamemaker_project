@@ -16,11 +16,11 @@
 // - Every step we push the resolved sprite into sprite_index / image_index / image_xscale, set
 //   image_speed = 0, and let the Draw event render it (with damage flash + roll i-frame tint).
 //
-// CONTROLS  (mirrors obj_player; combat is mouse-driven for snappy souls feel):
+// CONTROLS  (mirrors obj_player):
 // - WASD ............. move            - Space ............ dodge roll (i-frames, costs stamina)
 // - Left Mouse ....... slash (light)   - Right Mouse ...... chop (heavy)
 // - Q ............... heal (flask)     - T ............... walk toggle      - Esc ... pause
-// - On attack the character snaps to face the mouse cursor so swings go where you aim.
+// - Attacks swing in the direction the player is currently facing (set by movement / last input).
 //
 // SOULS-LIKE FEATURES INCLUDED (see notes in summary):
 // - Stamina governs roll / slash / chop and regenerates after a short delay.
@@ -170,16 +170,6 @@ function anim_is_finished() {
     return (floor(anim_frame) >= current_frame_count() - 1);
 }
 
-/// Snap 'face' to one of four directions pointing at the mouse cursor.
-function face_toward_mouse() {
-    var dir = point_direction(x, y, mouse_x, mouse_y);
-    // 45..135 = up, 135..225 = left, 225..315 = down, else right
-    if (dir > 45 && dir <= 135)       face = UP;
-    else if (dir > 135 && dir <= 225) face = LEFT;
-    else if (dir > 225 && dir <= 315) face = DOWN;
-    else                              face = RIGHT;
-}
-
 /// Spend stamina and (re)start the regen delay.
 function spend_stamina(_amount) {
     stamina = max(0, stamina - _amount);
@@ -199,7 +189,7 @@ function change_state(new_state) {
 
     switch (new_state) {
         case StrandedState.SLASHING:
-            face_toward_mouse();
+            // Swing in the direction the player is currently facing (set by movement).
             anim_speed     = 0.5;                 // snappy light swing
             attack_damage  = slash_damage + combo_stage * 4;  // ramp damage through the combo
             attack_has_hit = false;
@@ -209,7 +199,7 @@ function change_state(new_state) {
             break;
 
         case StrandedState.CHOPPING:
-            face_toward_mouse();
+            // Swing in the direction the player is currently facing (set by movement).
             anim_speed     = 0.32;                // heavier, weightier swing
             attack_damage  = chop_damage;
             attack_has_hit = false;
