@@ -313,6 +313,18 @@ function perform_attack() {
     }
     ds_list_destroy(warriors);
 
+    // Damage tamed beasts (own health pool + i-frames handled in take_hit).
+    var beasts = ds_list_create();
+    collision_rectangle_list(atk_l, atk_t, atk_r, atk_b, obj_tribe_tamed_beast, false, true, beasts, false);
+    for (var i = 0; i < ds_list_size(beasts); i++) {
+        var beast = ds_list_find_value(beasts, i);
+        if (beast.beast_invincible <= 0 && beast.current_state != BeastState.DEAD) {
+            beast.take_hit(attack_damage);
+            hit_something = true;
+        }
+    }
+    ds_list_destroy(beasts);
+
     // Damage destructible props if present in the room.
     if (object_exists(obj_crate)) {
         var crates = ds_list_create();

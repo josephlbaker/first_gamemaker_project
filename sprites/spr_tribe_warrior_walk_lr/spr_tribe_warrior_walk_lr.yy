@@ -36,8 +36,8 @@
   "nineSlice":null,
   "origin":4,
   "parent":{
-    "name":"Enemies",
-    "path":"folders/Sprites/Stranded_Sprites/Enemies.yy",
+    "name":"TribeWarrior",
+    "path":"folders/Sprites/Stranded_Sprites/Enemies/TribeWarrior.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",
